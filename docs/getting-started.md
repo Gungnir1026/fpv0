@@ -12,17 +12,33 @@
 
 常用指令已整理在根目錄 `Makefile`。在專案根目錄執行 `make help` 可以查看後端啟動、資料匯入、測試與 App 啟動指令。
 
+## Makefile 常用指令
+
+| 指令 | 用途 |
+| --- | --- |
+| `make help` | 查看所有常用 target。 |
+| `make postgis-up` | 只啟動 PostGIS；第一次建置、匯入資料與融合 OSM 時使用。 |
+| `make valhalla-up` | 只啟動 Valhalla；已產生 `taiwan_custom.pbf` 後使用。 |
+| `make backend-up` | 同時啟動 PostGIS 與 Valhalla；適合資料與圖磚已建置完成的日常啟動。 |
+| `make backend-down` | 關閉後端容器並保留資料。 |
+| `make backend-status` | 呼叫 Valhalla `/status`。 |
+| `make backend-logs` | 追蹤 Valhalla log，等待圖磚建置或排查 smoke test。 |
+| `make python-sync` | 使用 `uv` 安裝 Python 依賴。 |
+| `make ingest-taipei` | 匯入臺北市開放資料。 |
+| `make fuse-osm` | 融合 OSM 與機車限制資料，輸出 `taiwan_custom.pbf`。 |
+| `make test` | 執行不需要 Valhalla 已啟動的本機檢查。 |
+| `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線。 |
+| `make app-ios` | 啟動 iOS 模擬器 App。 |
+| `make app-android` | 啟動 Android 模擬器 App，會使用 `10.0.2.2` 連後端。 |
+
 ## 日常啟動
 
 資料與 Valhalla 圖磚已經建置完成時，依序執行：
 
 ```bash
-docker compose up -d postgis valhalla
-curl http://localhost:8002/status
-cd app/flutter_nav_mvp
-flutter run \
-  --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
-  --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+make backend-up
+make backend-status
+make app-ios
 ```
 
 iOS 模擬器若沒有位於臺北市，請設定測試座標：
@@ -35,7 +51,7 @@ Longitude: 121.5434
 
 ## 完整關閉
 
-1. 在執行 `flutter run` 的終端機按下：
+1. 在執行 `make app-ios`、`make app-android` 或底層 `flutter run` 的終端機按下：
 
    ```text
    q
@@ -46,7 +62,7 @@ Longitude: 121.5434
 2. 回到專案根目錄，停止容器並保留資料：
 
    ```bash
-   docker compose down
+   make backend-down
    ```
 
 3. 確認服務已停止：
@@ -55,7 +71,7 @@ Longitude: 121.5434
    docker compose ps
    ```
 
-`docker compose down` 不會刪除 PostGIS volume，也不會刪除 `infra/valhalla/custom_files` 內已建置的 Valhalla 檔案。
+`make backend-down` 底層會執行 `docker compose down`，不會刪除 PostGIS volume，也不會刪除 `infra/valhalla/custom_files` 內已建置的 Valhalla 檔案。
 
 ## 全新建置
 
@@ -86,34 +102,32 @@ Longitude: 121.5434
 4. 啟動 PostGIS：
 
    ```bash
-   docker compose up -d postgis
+   make postgis-up
    ```
 
 5. 使用 `uv` 安裝 Python 依賴：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv sync
+   make python-sync
    ```
 
 6. 匯入臺北市開放資料：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv run python scripts/taipei_open_data_ingest.py --dataset all
+   make ingest-taipei
    ```
 
 7. 融合 OSM 與機車限制資料：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv run python scripts/osm_tdx_fusion.py \
-     --input-pbf data/raw/osm/taiwan-latest.osm.pbf \
-     --output-pbf infra/valhalla/custom_files/taiwan_custom.pbf
+   make fuse-osm
    ```
 
 8. 啟動 Valhalla 並等待圖磚建置完成：
 
    ```bash
-   docker compose up -d valhalla
-   docker compose logs -f valhalla
+   make valhalla-up
+   make backend-logs
    ```
 
    看到服務開始監聽 `8002` 後，以 `Ctrl+C` 離開 log 畫面即可。容器仍會繼續執行。
@@ -121,24 +135,20 @@ Longitude: 121.5434
 9. 驗證後端：
 
    ```bash
-   bash scripts/valhalla_smoke_test.sh
+   make test-valhalla
    ```
 
 10. 驗證 Flutter：
 
     ```bash
-    cd app/flutter_nav_mvp
-    flutter pub get
-    flutter analyze
-    flutter test
+    make flutter-get
+    make test-flutter
     ```
 
 11. 啟動 iOS 模擬器 App：
 
     ```bash
-    flutter run \
-      --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
-      --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+    make app-ios
     ```
 
 ## 完整測試
@@ -146,13 +156,8 @@ Longitude: 121.5434
 在專案根目錄執行：
 
 ```bash
-UV_CACHE_DIR=.uv-cache uv run python -m unittest discover -s tests/python -v
-UV_CACHE_DIR=.uv-cache uv run python -m compileall -q scripts tests/python
-docker compose config --quiet
-bash scripts/valhalla_smoke_test.sh
-cd app/flutter_nav_mvp
-flutter analyze
-flutter test
+make test
+make test-valhalla
 ```
 
 App 畫面應符合：
@@ -180,8 +185,8 @@ rm -f infra/valhalla/custom_files/taiwan_custom.tar
 rm -f infra/valhalla/custom_files/admins.sqlite
 rm -f infra/valhalla/custom_files/timezones.sqlite
 rm -f infra/valhalla/custom_files/file_hashes.txt
-docker compose up -d valhalla
-docker compose logs -f valhalla
+make valhalla-up
+make backend-logs
 ```
 
 ### 完整清除
@@ -216,9 +221,13 @@ data/raw/osm/taiwan-latest.osm.pbf
 啟動 Flutter 時帶入 OpenFreeMap 樣式：
 
 ```bash
-flutter run \
-  --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
-  --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+make app-ios
+```
+
+Android 模擬器則使用：
+
+```bash
+make app-android
 ```
 
 ### Valhalla 回傳 HTTP 400
@@ -229,6 +238,16 @@ flutter run \
 Latitude: 25.0337
 Longitude: 121.5434
 ```
+
+### `make test-valhalla` 出現 Empty reply from server
+
+Valhalla 可能仍在建置圖磚，或正在載入剛產生的 `taiwan_custom.pbf`。先執行：
+
+```bash
+make backend-logs
+```
+
+等待 log 顯示服務已開始監聽 `8002` 後，再重新執行 `make test-valhalla`。
 
 ### App 無法連線後端
 
@@ -249,8 +268,7 @@ Android 模擬器使用：
 如果 App 啟動後立即中斷，先保留終端機錯誤訊息，再執行：
 
 ```bash
-flutter analyze
-flutter test
+make test-flutter
 ```
 
 目前一般地圖模式已避免由 Dart 主動建立 camera move，置中按鈕改用 MapLibre 原生定位追蹤，以避開 iOS 模擬器上的 native camera crash。

@@ -2,6 +2,8 @@
 
 本文件說明資料管線與各階段操作方式。日常啟停請優先參考 [getting-started.md](getting-started.md)。
 
+除非需要排查底層指令，操作時優先使用根目錄 `Makefile`。可先執行 `make help` 查看完整 target。
+
 ## 階段一：啟動 PostGIS 與匯入交通資料
 
 1. 建立本機環境設定：
@@ -25,19 +27,19 @@
 3. 啟動 PostGIS：
 
    ```bash
-   docker compose up -d postgis
+   make postgis-up
    ```
 
 4. 使用 `uv` 安裝 Python 依賴：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv sync
+   make python-sync
    ```
 
 5. 將臺北市資料匯入 PostGIS：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv run python scripts/taipei_open_data_ingest.py --dataset all
+   make ingest-taipei
    ```
 
 此時 Valhalla 還沒有台灣路由圖磚。必須完成階段二並產生 `taiwan_custom.pbf`。
@@ -55,9 +57,7 @@
 3. 執行融合：
 
    ```bash
-   UV_CACHE_DIR=.uv-cache uv run python scripts/osm_tdx_fusion.py \
-     --input-pbf data/raw/osm/taiwan-latest.osm.pbf \
-     --output-pbf infra/valhalla/custom_files/taiwan_custom.pbf
+   make fuse-osm
    ```
 
 腳本會先將目標區域道路暫存到 PostGIS，再透過文字與空間媒合：
@@ -77,14 +77,14 @@
 2. 啟動 Valhalla：
 
    ```bash
-   docker compose up -d valhalla
-   docker compose logs -f valhalla
+   make valhalla-up
+   make backend-logs
    ```
 
 3. 驗證 route endpoint：
 
    ```bash
-   bash scripts/valhalla_smoke_test.sh
+   make test-valhalla
    ```
 
 4. 驗證 Meili 道路吸附：
@@ -102,26 +102,20 @@
 1. 驗證 Flutter 專案：
 
    ```bash
-   cd app/flutter_nav_mvp
-   flutter pub get
-   flutter analyze
-   flutter test
+   make flutter-get
+   make test-flutter
    ```
 
 2. 啟動 iOS 模擬器 App：
 
    ```bash
-   flutter run \
-     --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
-     --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+   make app-ios
    ```
 
 3. Android 模擬器要改用 host loopback alias：
 
    ```bash
-   flutter run \
-     --dart-define=VALHALLA_BASE_URL=http://10.0.2.2:8002 \
-     --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+   make app-android
    ```
 
 4. App 啟動後：

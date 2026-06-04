@@ -6,13 +6,15 @@ VALHALLA_BASE_URL ?= http://localhost:8002
 MAP_STYLE_URL ?= https://tiles.openfreemap.org/styles/liberty
 
 .PHONY: help \
-	backend-up backend-down backend-status backend-logs \
+	postgis-up valhalla-up backend-up backend-down backend-status backend-logs \
 	python-sync ingest-taipei fuse-osm \
 	test-python test-compose test-valhalla test-flutter test \
 	flutter-get flutter-analyze flutter-test app-ios app-android
 
 help:
 	@echo "常用指令："
+	@echo "  make postgis-up       只啟動 PostGIS，適合第一次匯入與融合資料"
+	@echo "  make valhalla-up      只啟動 Valhalla，適合 taiwan_custom.pbf 已產生後"
 	@echo "  make backend-up       啟動 PostGIS 與 Valhalla"
 	@echo "  make backend-down     關閉後端容器並保留資料"
 	@echo "  make backend-status   檢查 Valhalla /status"
@@ -26,6 +28,12 @@ help:
 	@echo "  make test-valhalla    執行 Valhalla smoke test"
 	@echo "  make app-ios          啟動 iOS 模擬器 App"
 	@echo "  make app-android      啟動 Android 模擬器 App"
+
+postgis-up:
+	docker compose up -d postgis
+
+valhalla-up:
+	docker compose up -d valhalla
 
 backend-up:
 	docker compose up -d postgis valhalla

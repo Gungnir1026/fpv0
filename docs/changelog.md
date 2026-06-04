@@ -12,6 +12,12 @@ YYYY-MM-DD
 
 ## 2026-06-04
 
+- 異動：補上 `make postgis-up` 與 `make valhalla-up`，並將 README、getting-started、runbook、Flutter README、tech-stack 與簡報草稿改為 Makefile 優先的操作說明。
+- 驗證：文件引用檢查與 Makefile dry run。
+- 備註：此步只整理啟動與測試入口，未修改 App、ETL 或 Valhalla 路由邏輯。
+
+## 2026-06-04
+
 - 異動：拆分 `navigation_map_page.dart`，將導航面板 UI 移至 `navigation_panels.dart`，MapLibre annotation 管理移至 `navigation_map_overlays.dart`。
 - 驗證：`make test` 通過，包含 Python `unittest` 8 項、Python `compileall`、Compose config、Flutter analyze 與 Flutter 測試 30 項。
 - 備註：此步為結構整理，未改變導航流程、路由請求或 UI 行為。

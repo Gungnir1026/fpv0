@@ -38,7 +38,7 @@ Valhalla image 已固定到 digest，避免上游 `latest` 或相同 tag 重新�
 | psycopg2-binary | `2.9.12` | 將資料寫入 PostgreSQL/PostGIS，並執行空間查詢。 |
 | osmium | `4.3.1` | 讀取、篩選與改寫 OSM PBF。 |
 
-Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。所有 Python 指令都應透過 `uv run` 執行。
+Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。日常操作優先使用根目錄 `Makefile`，需要直接執行 Python 腳本時才使用 `uv run`。
 
 ## Flutter App
 
@@ -62,6 +62,9 @@ Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。所有 Python 
 
 | 工具 | 用途 |
 | --- | --- |
+| `Makefile` | 封裝後端啟停、Python ETL、Flutter 驗證與 App 啟動；可用 `make help` 查看 target。 |
+| `make test` | 執行 Python `unittest`、`compileall`、Compose config、Flutter analyze 與 Flutter test。 |
+| `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線；需要 Valhalla 已啟動且圖磚建置完成。 |
 | `flutter analyze` | 檢查 Dart 型別、lint 與常見程式品質問題。 |
 | `flutter test` | 驗證 GPS 清理、polyline 解碼、車道解析、Valhalla client、導航 session、吸附點新鮮度、偏航幾何運算與 App 殼層。 |
 | Python `unittest` | 驗證 `.env` 讀取、bbox 解析、路名拆分與機車車道限制正規化。 |

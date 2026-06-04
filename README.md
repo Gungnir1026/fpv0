@@ -18,12 +18,9 @@
 如果資料已經完成建置，只需：
 
 ```bash
-docker compose up -d postgis valhalla
-curl http://localhost:8002/status
-cd app/flutter_nav_mvp
-flutter run \
-  --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
-  --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+make backend-up
+make backend-status
+make app-ios
 ```
 
 如果是第一次啟動，請依照 [docs/getting-started.md](docs/getting-started.md) 的「全新建置」執行。
@@ -57,21 +54,26 @@ flutter run \
 
 ## 驗證指令
 
+日常驗證優先使用 Makefile：
+
 ```bash
-UV_CACHE_DIR=.uv-cache uv run python -m unittest discover -s tests/python -v
-UV_CACHE_DIR=.uv-cache uv run python -m compileall -q scripts tests/python
-docker compose config --quiet
-bash scripts/valhalla_smoke_test.sh
-cd app/flutter_nav_mvp
-flutter analyze
-flutter test
+make test
+make test-valhalla
 ```
 
-也可以使用 Makefile 包裝後的常用指令：
+常用 target：
 
 ```bash
+make help
+make postgis-up
+make valhalla-up
+make backend-up
+make backend-down
+make python-sync
+make ingest-taipei
+make fuse-osm
 make test-python
 make test-flutter
-make backend-up
 make app-ios
+make app-android
 ```

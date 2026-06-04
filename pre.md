@@ -36,21 +36,20 @@ data/raw/osm/taiwan-latest.osm.pbf
 接著：
 
 ```bash
-docker compose up -d postgis
+make postgis-up
 make python-sync
 make ingest-taipei
 make fuse-osm
-docker compose up -d valhalla
+make valhalla-up
+make backend-logs
 make test-valhalla
 ```
 
 Flutter：
 
 ```bash
-cd app/flutter_nav_mvp
-flutter pub get
-flutter analyze
-flutter test
+make flutter-get
+make test-flutter
 ```
 
 啟動 iOS 模擬器 App：
@@ -80,6 +79,6 @@ infra/valhalla/custom_files/timezones.sqlite
 1. 安裝 Docker、uv、Flutter、Xcode。
 2. 複製 `.env.example` 成 `.env`。
 3. 準備 `data/raw/osm/taiwan-latest.osm.pbf`。
-4. 跑 `make python-sync`、匯入臺北資料、融合 OSM。
-5. 啟動 Valhalla。
+4. 跑 `make postgis-up`、`make python-sync`、`make ingest-taipei`、`make fuse-osm`。
+5. 跑 `make valhalla-up` 並用 `make backend-logs` 等待圖磚建置完成。
 6. 跑 Flutter App。

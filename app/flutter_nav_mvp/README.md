@@ -6,7 +6,14 @@ App 也會解析 Valhalla maneuver 與 lane guidance。如果後端回傳台灣�
 
 ## 驗證
 
-修改 Flutter 程式後，請在本目錄執行：
+修改 Flutter 程式後，建議在專案根目錄執行：
+
+```bash
+make flutter-get
+make test-flutter
+```
+
+若已位於本目錄，也可以直接執行底層 Flutter 指令：
 
 ```bash
 flutter pub get
@@ -16,7 +23,19 @@ flutter test
 
 ## 啟動
 
-iOS 模擬器使用：
+iOS 模擬器建議在專案根目錄使用：
+
+```bash
+make app-ios
+```
+
+Android 模擬器建議在專案根目錄使用：
+
+```bash
+make app-android
+```
+
+若已位於本目錄，iOS 模擬器使用：
 
 ```bash
 flutter run \

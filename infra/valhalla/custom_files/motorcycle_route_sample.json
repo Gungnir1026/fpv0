@@ -1,0 +1,27 @@
+{
+  "locations": [
+    {
+      "lat": 25.0337,
+      "lon": 121.5434,
+      "type": "break"
+    },
+    {
+      "lat": 25.0264,
+      "lon": 121.5348,
+      "type": "break"
+    }
+  ],
+  "costing": "motorcycle",
+  "costing_options": {
+    "motorcycle": {
+      "disable_hierarchy_pruning": true,
+      "use_ferry": 0.0,
+      "use_highways": 0.4,
+      "use_tolls": 0.0
+    }
+  },
+  "directions_type": "instructions",
+  "language": "zh-TW",
+  "turn_lanes": true,
+  "units": "kilometers"
+}

@@ -1,0 +1,50 @@
+services:
+  postgis:
+    image: postgis/postgis:16-3.5
+    platform: linux/amd64
+    container_name: tw-nav-postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tw_nav}
+      POSTGRES_USER: ${POSTGRES_USER:-tw_nav}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tw_nav_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  valhalla:
+    # Valhalla scripted 3.7.0 pinned by digest for reproducible builds.
+    image: ghcr.io/valhalla/valhalla-scripted@sha256:2bafe8a908da3f538caabf867350d4e7c3dfb6e9a7e286bcf7a4cfa0f90b5e57
+    platform: linux/amd64
+    container_name: tw-nav-valhalla
+    restart: unless-stopped
+    ports:
+      - "${VALHALLA_PORT:-8002}:8002"
+    volumes:
+      - ./infra/valhalla/custom_files:/custom_files
+    environment:
+      serve_tiles: "True"
+      build_admins: "True"
+      build_time_zones: "True"
+      build_elevation: "False"
+      build_transit: "False"
+      build_tar: "True"
+      force_rebuild: "False"
+      update_existing_config: "True"
+      use_tiles_ignore_pbf: "False"
+      traffic_name: ""
+      server_threads: "${VALHALLA_SERVER_THREADS:-2}"
+      tileset_name: "taiwan_custom"
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+volumes:
+  postgis_data:

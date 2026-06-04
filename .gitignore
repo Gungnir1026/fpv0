@@ -1,0 +1,60 @@
+# macOS 與編輯器
+.DS_Store
+.idea/
+*.iml
+*.log
+
+# 本機密鑰與環境設定
+.env
+.env.*
+!.env.example
+
+# Python 產物、虛擬環境與套件快取
+__pycache__/
+*.py[oc]
+.venv/
+.uv-cache/
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Flutter / Dart 產物
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+coverage/
+
+# Android 本機設定、簽章與產物
+.gradle/
+local.properties
+key.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# iOS / Xcode 本機產物
+DerivedData/
+Pods/
+xcuserdata/
+*.xcuserstate
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/flutter_export_environment.sh
+
+# 工具自動產生的 GitHub modernize 暫存資料；保留未來 .github/workflows 可提交。
+.github/modernize/
+
+# 下載與 ETL 產出的資料。需要分享資料時請改用 release 或外部儲存。
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Valhalla 掛載目錄只提交小型設定與範例，其餘圖磚/SQLite/tar/PBF 皆本機重建。
+infra/valhalla/custom_files/*
+!infra/valhalla/custom_files/README.md
+!infra/valhalla/custom_files/valhalla.json
+!infra/valhalla/custom_files/motorcycle_route_sample.json

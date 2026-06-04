@@ -1,0 +1,11 @@
+[project]
+name = "fpv0"
+version = "0.1.0"
+description = "Taiwan motorcycle navigation MVP data ingestion and OSM fusion tools"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "osmium>=4.0,<5",
+    "psycopg2-binary>=2.9,<3",
+    "requests>=2.32,<3",
+]

@@ -46,4 +46,27 @@ void main() {
 
     expect(maneuver.isTwoStageTurn, isTrue);
   });
+
+  test('parses backend Taiwan motorcycle semantics', () {
+    final maneuver = NavigationManeuver.fromJson(
+      {
+        'type': 15,
+        'instruction': 'Turn left.',
+        'begin_shape_index': 0,
+        'end_shape_index': 1,
+        'taiwan_motorcycle': {
+          'two_stage_turn': true,
+          'two_stage_turn_penalty_seconds': 90,
+          'motorcycle:lanes': 'no|yes',
+        },
+      },
+      shapeIndexOffset: 0,
+    );
+
+    expect(maneuver.isTwoStageTurn, isTrue);
+    expect(maneuver.twoStageTurnPenaltySeconds, 90);
+    expect(maneuver.lanes, hasLength(2));
+    expect(maneuver.lanes.first.motorcycleAllowed, isFalse);
+    expect(maneuver.lanes.last.motorcycleAllowed, isTrue);
+  });
 }

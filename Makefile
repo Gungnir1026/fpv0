@@ -3,13 +3,16 @@ FLUTTER_DIR ?= app/flutter_nav_mvp
 OSM_PBF ?= data/raw/osm/taiwan-latest.osm.pbf
 CUSTOM_PBF ?= infra/valhalla/custom_files/taiwan_custom.pbf
 GOLDEN_ROUTES ?= tests/golden_routes/daan_motorcycle_routes.json
+INTEGRATION_ROUTES ?= tests/integration/valhalla_motorcycle_semantics.json
+FACADE_PAYLOAD ?= infra/valhalla/custom_files/motorcycle_route_sample.json
 VALHALLA_BASE_URL ?= http://localhost:8002
 MAP_STYLE_URL ?= https://tiles.openfreemap.org/styles/liberty
 
 .PHONY: help \
 	postgis-up valhalla-up backend-up backend-down backend-status backend-logs \
 	python-sync ingest-taipei fuse-osm \
-	audit-pbf-tags test-python test-compose test-valhalla test-golden-routes test-flutter test \
+	route-facade-demo \
+	audit-pbf-tags test-python test-compose test-valhalla test-golden-routes test-valhalla-integration test-flutter test \
 	flutter-get flutter-analyze flutter-test app-ios app-android
 
 help:
@@ -23,12 +26,14 @@ help:
 	@echo "  make python-sync      使用 uv 安裝 Python 依賴"
 	@echo "  make ingest-taipei    匯入臺北市開放資料"
 	@echo "  make fuse-osm         融合 OSM 與機車限制資料"
+	@echo "  make route-facade-demo 呼叫 Valhalla 並補上台灣機車語意"
 	@echo "  make audit-pbf-tags   抽查融合後 PBF 的機車標籤"
 	@echo "  make test-python      執行 Python 測試與 compileall"
 	@echo "  make test-flutter     執行 Flutter analyze 與 test"
 	@echo "  make test             執行不需啟動 Valhalla 的本機檢查"
 	@echo "  make test-valhalla    執行 Valhalla smoke test"
 	@echo "  make test-golden-routes 執行 Valhalla 黃金路線測試"
+	@echo "  make test-valhalla-integration 執行 Valhalla 機車語意整合測試"
 	@echo "  make app-ios          啟動 iOS 模擬器 App"
 	@echo "  make app-android      啟動 Android 模擬器 App"
 
@@ -62,6 +67,9 @@ fuse-osm:
 audit-pbf-tags:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/pbf_tag_audit.py --pbf $(CUSTOM_PBF)
 
+route-facade-demo:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/taiwan_motorcycle_route_facade.py $(FACADE_PAYLOAD) --base-url $(VALHALLA_BASE_URL) --pbf $(CUSTOM_PBF)
+
 test-python:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python -m unittest discover -s tests/python -v
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python -m compileall -q scripts tests/python
@@ -74,6 +82,9 @@ test-valhalla:
 
 test-golden-routes:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/valhalla_golden_routes.py --cases $(GOLDEN_ROUTES) --base-url $(VALHALLA_BASE_URL)
+
+test-valhalla-integration:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/valhalla_integration_test.py --cases $(INTEGRATION_ROUTES) --base-url $(VALHALLA_BASE_URL)
 
 flutter-get:
 	cd $(FLUTTER_DIR) && flutter pub get

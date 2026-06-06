@@ -84,6 +84,7 @@ class NavigationManeuver {
     required this.timeSeconds,
     required this.lanes,
     required this.isTwoStageTurn,
+    this.twoStageTurnPenaltySeconds,
   });
 
   factory NavigationManeuver.fromJson(
@@ -101,6 +102,7 @@ class NavigationManeuver {
       timeSeconds: _doubleValue(json['time']),
       lanes: _lanesFromJson(json, motorcycleLaneAccess),
       isTwoStageTurn: _isTwoStageTurn(json),
+      twoStageTurnPenaltySeconds: _twoStageTurnPenaltySeconds(json),
     );
   }
 
@@ -112,6 +114,7 @@ class NavigationManeuver {
   final double timeSeconds;
   final List<NavigationLane> lanes;
   final bool isTwoStageTurn;
+  final double? twoStageTurnPenaltySeconds;
 
   bool get hasLaneGuidance => lanes.isNotEmpty;
 
@@ -206,6 +209,14 @@ List<bool>? _motorcycleLaneAccess(Map<String, dynamic> json) {
       _deepValue(json, const [
         'custom',
         'motorcycle:lanes',
+      ]) ??
+      _deepValue(json, const [
+        'taiwan_motorcycle',
+        'motorcycle:lanes',
+      ]) ??
+      _deepValue(json, const [
+        'taiwan_motorcycle',
+        'motorcycle_lanes',
       ]);
 
   if (raw is String && raw.trim().isNotEmpty) {
@@ -250,7 +261,8 @@ bool _isTwoStageTurn(Map<String, dynamic> json) {
       json['motorcycleRestriction'] ??
       json['restriction_motorcycle'] ??
       json['maneuver_kind'] ??
-      json['kind'];
+      json['kind'] ??
+      json['two_stage_turn'];
   final nested = _deepValue(json, const [
         'custom',
         'restriction:motorcycle',
@@ -258,16 +270,47 @@ bool _isTwoStageTurn(Map<String, dynamic> json) {
       _deepValue(json, const [
         'edge',
         'restriction:motorcycle',
+      ]) ??
+      _deepValue(json, const [
+        'taiwan_motorcycle',
+        'restriction:motorcycle',
+      ]) ??
+      _deepValue(json, const [
+        'taiwan_motorcycle',
+        'two_stage_turn',
       ]);
 
   return _isTwoStageTurnValue(direct) || _isTwoStageTurnValue(nested);
 }
 
 bool _isTwoStageTurnValue(Object? value) {
+  if (value is bool) {
+    return value;
+  }
   final normalized = value?.toString().trim().toLowerCase();
   return normalized == 'two_stage_turn' ||
       normalized == 'two-stage-turn' ||
-      normalized == 'two stage turn';
+      normalized == 'two stage turn' ||
+      normalized == 'true' ||
+      normalized == '1';
+}
+
+double? _twoStageTurnPenaltySeconds(Map<String, dynamic> json) {
+  final value = json['two_stage_turn_penalty_seconds'] ??
+      json['twoStageTurnPenaltySeconds'] ??
+      _deepValue(json, const [
+        'custom',
+        'two_stage_turn_penalty_seconds',
+      ]) ??
+      _deepValue(json, const [
+        'taiwan_motorcycle',
+        'two_stage_turn_penalty_seconds',
+      ]);
+
+  if (value == null) {
+    return null;
+  }
+  return _doubleValue(value);
 }
 
 Object? _deepValue(Map<String, dynamic> json, List<String> path) {

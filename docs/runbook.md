@@ -101,7 +101,23 @@
 
    黃金路線案例位於 `tests/golden_routes/daan_motorcycle_routes.json`，目前固定檢查三組大安區起訖點的距離、時間、maneuver 數量與必要道路名稱。
 
-5. 驗證 Meili 道路吸附：
+5. 驗證機車語意整合案例：
+
+   ```bash
+   make test-valhalla-integration
+   ```
+
+   整合案例位於 `tests/integration/valhalla_motorcycle_semantics.json`。目前包含 `民族陸橋` control：auto 會通過該道路，motorcycle 會因 `motorcycle=no` 避開。
+
+6. 驗證 facade 可回傳 App 可解析的台灣機車語意：
+
+   ```bash
+   make route-facade-demo
+   ```
+
+   這個 demo 會呼叫 Valhalla `/route`，再用 `taiwan_custom.pbf` 補上 maneuver 的 `taiwan_motorcycle`、`custom`、`motorcycle:lanes` 或 `restriction:motorcycle` 欄位。它目前是 CLI 形式，尚不是常駐 API server。
+
+7. 驗證 Meili 道路吸附：
 
    ```bash
    curl -X POST http://localhost:8002/trace_route \
@@ -149,7 +165,8 @@ Flutter App 呼叫 Meili `/trace_route` 時會帶入 `turn_lanes: true`，並解
 前端也能解析台灣機車管線提供的客製欄位：
 
 - `motorcycle:lanes`：例如 `no|yes|yes`，供車道 UI 判斷禁行與可通行車道。
-- `restriction:motorcycle=two_stage_turn`：可位於 maneuver 本身或 `custom`、`edge` 物件內。
+- `restriction:motorcycle=two_stage_turn`：可位於 maneuver 本身或 `custom`、`edge`、`taiwan_motorcycle` 物件內。
+- `taiwan_motorcycle.two_stage_turn=true` 與 `taiwan_motorcycle.two_stage_turn_penalty_seconds=90`：供 UI 顯示與後續 API facade 使用；目前尚未改變 stock Valhalla costing。
 
 當下一個兩段式左轉 maneuver 距離目前 GPS 小於 `50 公尺`，App 會在對應 shape point 繪製藍色半透明 MapLibre Polygon。
 

@@ -10,6 +10,8 @@ motorcycle=no
 
 Valhalla 建置圖磚時會產生 access flag，`motorcycle` costing 便能排除該道路。
 
+目前已用 `make test-valhalla-integration` 驗證：auto control 會走 `民族陸橋`，而 motorcycle route 會避開同一條 `motorcycle=no` 道路。
+
 車道級標籤：
 
 ```text
@@ -17,6 +19,8 @@ motorcycle:lanes=no|yes|yes
 ```
 
 目前保留給前端顯示與後續圖磚屬性擴充。只要道路仍有一條可合法通行的車道，原生 Valhalla 不應將整條 edge 排除。
+
+目前 `scripts/taiwan_motorcycle_route_facade.py` 可從融合後 PBF 推導 `motorcycle:lanes`，並補回 Valhalla maneuver 的 `taiwan_motorcycle` 與 `custom` 欄位，Flutter parser 已可解析此格式。
 
 ## 兩段式左轉為何需要修改引擎
 
@@ -26,6 +30,8 @@ motorcycle:lanes=no|yes|yes
 
 1. Mjolnir：遇到 `restriction:motorcycle=two_stage_turn` 節點時，寫入可供圖磚保存的路口 flag。
 2. Sif：`MotorcycleCost::TransitionCost` 在機車左轉通過該節點時增加 `90 秒`。
+
+目前 `make route-facade-demo` 只會把 `two_stage_turn_penalty_seconds=90` 作為語意欄位補回 response，方便 UI 與後續 API facade 驗證；它尚未改變 stock Valhalla 的選路與 ETA。
 
 ## 目標行為
 
@@ -104,12 +110,12 @@ Valhalla 內部圖磚 struct 大小固定，而且不同版本可能變動。請
 
 ## 客製映像建置
 
-固定 Valhalla release 並套用 patch 後：
+P1 scaffold 位於 `infra/valhalla/custom/README.md`。固定 Valhalla release 並套用 patch 後：
 
 ```bash
 git clone https://github.com/valhalla/valhalla.git vendor/valhalla
 cd vendor/valhalla
-git checkout 3.5.1
+git checkout 3.7.0
 # 依照固定版本調整程式，並提交或保存 patch。
 docker build -f docker/Dockerfile-scripted -t tw-nav-valhalla:two-stage-turn .
 ```
@@ -129,6 +135,7 @@ valhalla:
 - 有待轉 flag 的左轉 cost 與 ETA 增加 `90 秒`。
 - 同路口直行與右轉不增加懲罰。
 - 開啟與關閉懲罰時，黃金路線選擇符合預期。
+- `make test-valhalla-integration`、`make test-golden-routes` 與 `make route-facade-demo` 仍維持可用。
 
 ## 暫時性替代方案
 

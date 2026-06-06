@@ -45,6 +45,8 @@ make valhalla-up
 make backend-logs
 make test-valhalla
 make test-golden-routes
+make test-valhalla-integration
+make route-facade-demo
 ```
 
 Flutter：
@@ -57,7 +59,6 @@ make test-flutter
 啟動 iOS 模擬器 App：
 
 ```bash
-cd ../..
 make app-ios
 ```
 
@@ -84,5 +85,6 @@ infra/valhalla/custom_files/timezones.sqlite
 4. 跑 `make postgis-up`、`make python-sync`、`make ingest-taipei`、`make fuse-osm`。
 5. 跑 `make audit-pbf-tags` 確認融合後 PBF 有機車標籤。
 6. 跑 `make valhalla-up` 並用 `make backend-logs` 等待圖磚建置完成。
-7. 跑 `make test-valhalla` 與 `make test-golden-routes` 驗證後端路線。
-8. 跑 Flutter App。
+7. 跑 `make test-valhalla`、`make test-golden-routes` 與 `make test-valhalla-integration` 驗證後端路線與 `motorcycle=no` 語意。
+8. 跑 `make route-facade-demo` 檢查後端可補上 App 可解析的台灣機車語意欄位。
+9. 跑 Flutter App。

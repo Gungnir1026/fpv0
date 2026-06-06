@@ -75,6 +75,8 @@ Flutter + MapLibre App
 
 Valhalla 會從 `infra/valhalla/custom_files` 掛載 `valhalla.json`、融合後 PBF 與已建置圖磚。路由服務本身不直接讀取 PostGIS；PostGIS 只在資料匯入與 PBF 融合階段使用。
 
+`scripts/taiwan_motorcycle_route_facade.py` 是目前的輕量後端語意橋接工具。它會呼叫 Valhalla `/route`，再用融合後 PBF 的待轉節點與車道標籤補上 maneuver 層級的 `taiwan_motorcycle`、`custom`、`motorcycle:lanes` 與 `restriction:motorcycle` 欄位。這讓 Flutter UI 可以先接上真實資料語意；但它不會改變 stock Valhalla 的選路成本。
+
 ## 路由與導航演算法
 
 App 呼叫 Valhalla `/route` 時，送出起點、終點與 `costing: motorcycle`。Valhalla 的流程可分為：
@@ -108,6 +110,8 @@ Meili 的結果用於道路吸附與偏航判斷。App 只接受時間夠新且�
 | --- | --- |
 | `make audit-pbf-tags` | 使用 `scripts/pbf_tag_audit.py` 抽查 `taiwan_custom.pbf` 是否含有 `restriction:motorcycle=two_stage_turn`、`tdx:motorcycle_waiting_zone=yes`、`motorcycle:lanes`、`tdx:motorcycle_lane_restriction=yes` 與 `motorcycle=no`。預設為快速最低門檻抽查；需要精準全檔統計時可直接執行腳本並加上 `--full-scan`。 |
 | `make test-golden-routes` | 使用 `scripts/valhalla_golden_routes.py` 讀取 `tests/golden_routes/daan_motorcycle_routes.json`，固定驗證三條大安區機車 baseline 路線的距離、時間、maneuver 數量、travel type 與必要道路名稱。 |
+| `make test-valhalla-integration` | 使用 `scripts/valhalla_integration_test.py` 讀取 `tests/integration/valhalla_motorcycle_semantics.json`，驗證 auto control 會走 `民族陸橋`，而 motorcycle costing 會避開同一條 `motorcycle=no` 道路。 |
+| `make route-facade-demo` | 呼叫 Valhalla 並用 `taiwan_custom.pbf` 補上 App 可解析的台灣機車語意欄位。 |
 
 ## Flutter App 狀態
 
@@ -126,11 +130,13 @@ App 目前有三種 session：
 已生效：
 
 - OSM 與臺北市資料可融合並輸出 `taiwan_custom.pbf`。
-- 原生 Valhalla 可依照標準 `motorcycle=no` 排除整條禁行道路。
+- 原生 Valhalla 可依照標準 `motorcycle=no` 排除整條禁行道路，並已用 `make test-valhalla-integration` 驗證。
+- `scripts/taiwan_motorcycle_route_facade.py` 可推導 maneuver 層級的 `taiwan_motorcycle`、`restriction:motorcycle=two_stage_turn` 與 `motorcycle:lanes` 欄位。
 - Flutter 可顯示地圖、定位、路線預覽、導航狀態、偏航重規劃與 UI 層的車道/待轉區解析。
+- Flutter parser 已可解析 `taiwan_motorcycle` 欄位，將後端推導的車道與待轉語意接回車道 UI 與虛擬待轉區。
 
 尚未生效：
 
 - `restriction:motorcycle=two_stage_turn` 尚未真正進入 Valhalla 圖磚成本模型。
 - 兩段式左轉 `+90 秒` 懲罰需要客製 Valhalla Mjolnir 與 Sif，詳見 [valhalla-customization.md](valhalla-customization.md)。
-- `motorcycle:lanes=no|yes|yes` 目前主要是 UI 與後續圖磚屬性預備，不等同於原生 Valhalla 的車道級避讓。
+- `motorcycle:lanes=no|yes|yes` 目前已可供 App UI 使用，但不等同於原生 Valhalla 的車道級避讓。

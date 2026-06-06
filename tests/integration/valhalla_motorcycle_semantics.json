@@ -1,0 +1,96 @@
+{
+  "description": "Valhalla integration cases that verify Taiwan motorcycle semantics beyond HTTP 200. The Minzu Overpass control proves that auto routing can use the road while motorcycle routing avoids the same motorcycle=no way.",
+  "cases": [
+    {
+      "name": "auto_control_uses_minzu_overpass",
+      "description": "Control route: automobile costing should use the motorcycle=no overpass, proving the test corridor is meaningful.",
+      "request": {
+        "locations": [
+          {
+            "lat": 24.9855924,
+            "lon": 121.3106715,
+            "type": "break"
+          },
+          {
+            "lat": 24.989366,
+            "lon": 121.3101919,
+            "type": "break"
+          }
+        ],
+        "costing": "auto",
+        "directions_type": "instructions",
+        "language": "zh-TW",
+        "units": "kilometers"
+      },
+      "expect": {
+        "status": 0,
+        "length_km": {
+          "min": 0.35,
+          "max": 0.65
+        },
+        "time_s": {
+          "min": 40,
+          "max": 120
+        },
+        "min_maneuvers": 2,
+        "travel_type": "car",
+        "required_street_names": [
+          "民族陸橋"
+        ],
+        "required_shape_bboxes": [
+          {
+            "name": "minzu_overpass_corridor",
+            "min_lat": 24.9854,
+            "min_lon": 121.3100,
+            "max_lat": 24.9896,
+            "max_lon": 121.3112
+          }
+        ]
+      }
+    },
+    {
+      "name": "motorcycle_avoids_minzu_overpass",
+      "description": "Motorcycle costing should avoid the same motorcycle=no overpass and take the longer legal route.",
+      "request": {
+        "locations": [
+          {
+            "lat": 24.9855924,
+            "lon": 121.3106715,
+            "type": "break"
+          },
+          {
+            "lat": 24.989366,
+            "lon": 121.3101919,
+            "type": "break"
+          }
+        ],
+        "costing": "motorcycle",
+        "directions_type": "instructions",
+        "language": "zh-TW",
+        "turn_lanes": true,
+        "units": "kilometers"
+      },
+      "expect": {
+        "status": 0,
+        "length_km": {
+          "min": 1.2,
+          "max": 2.2
+        },
+        "time_s": {
+          "min": 180,
+          "max": 420
+        },
+        "min_maneuvers": 5,
+        "travel_type": "motorcycle",
+        "avoided_street_names": [
+          "民族陸橋"
+        ],
+        "required_street_names": [
+          "介壽路",
+          "復興路",
+          "民族路"
+        ]
+      }
+    }
+  ]
+}

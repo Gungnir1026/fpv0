@@ -66,7 +66,9 @@ Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。日常操作�
 | `make test` | 執行 Python `unittest`、`compileall`、Compose config、Flutter analyze 與 Flutter test。 |
 | `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線；需要 Valhalla 已啟動且圖磚建置完成。 |
 | `make test-golden-routes` | 以固定大安區起訖點驗證 Valhalla baseline 路線距離、時間、maneuver 與道路名稱。 |
+| `make test-valhalla-integration` | 驗證 `motorcycle=no` 對機車路由的實際影響，並與 auto control 對照。 |
 | `make audit-pbf-tags` | 抽查融合後 PBF 是否含有台灣機車限制標籤。 |
+| `make route-facade-demo` | 呼叫 Valhalla `/route` 後，用融合後 PBF 補上 `taiwan_motorcycle` 語意欄位。 |
 | `flutter analyze` | 檢查 Dart 型別、lint 與常見程式品質問題。 |
 | `flutter test` | 驗證 GPS 清理、polyline 解碼、車道解析、Valhalla client、導航 session、吸附點新鮮度、偏航幾何運算與 App 殼層。 |
 | Python `unittest` | 驗證 `.env` 讀取、bbox 解析、路名拆分與機車車道限制正規化。 |

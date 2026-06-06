@@ -30,6 +30,8 @@
 | `make test` | 執行不需要 Valhalla 已啟動的本機檢查。 |
 | `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線。 |
 | `make test-golden-routes` | 執行大安區固定起訖點的 Valhalla 黃金路線驗收。 |
+| `make test-valhalla-integration` | 驗證 `motorcycle=no` 會影響機車路由，並與 auto control 對照。 |
+| `make route-facade-demo` | 呼叫 Valhalla 並補上 App 可解析的台灣機車語意欄位。 |
 | `make app-ios` | 啟動 iOS 模擬器 App。 |
 | `make app-android` | 啟動 Android 模擬器 App，會使用 `10.0.2.2` 連後端。 |
 
@@ -145,6 +147,8 @@ Longitude: 121.5434
    ```bash
    make test-valhalla
    make test-golden-routes
+   make test-valhalla-integration
+   make route-facade-demo
    ```
 
 11. 驗證 Flutter：
@@ -168,6 +172,8 @@ Longitude: 121.5434
 make test
 make test-valhalla
 make test-golden-routes
+make test-valhalla-integration
+make route-facade-demo
 make audit-pbf-tags
 ```
 
@@ -181,6 +187,8 @@ App 畫面應符合：
 - 按下開始後，畫面切換為導航中；只有此時才會顯示 maneuver、車道與虛擬待轉區。
 - 導航中偏離規劃路線超過門檻時，App 會自動重新規劃。
 - `make test-golden-routes` 的三條大安區 baseline 路線皆通過。
+- `make test-valhalla-integration` 顯示 auto control 會走 `民族陸橋`，motorcycle 會避開同一條 `motorcycle=no` 道路。
+- `make route-facade-demo` 可輸出 App 可解析的 `taiwan_motorcycle`、`motorcycle:lanes` 與待轉語意欄位。
 - `make audit-pbf-tags` 顯示待轉、車道與禁行機車標籤至少達到最低門檻。
 
 偏航判斷會優先採用新鮮且接近目前 raw GPS 的 Meili 吸附點。如果吸附結果已過期，或定位突然跳離原位置，App 會退回 raw GPS，避免舊吸附點延遲重新規劃。
@@ -252,7 +260,7 @@ Latitude: 25.0337
 Longitude: 121.5434
 ```
 
-### `make test-valhalla` 或 `make test-golden-routes` 出現 Empty reply from server
+### `make test-valhalla`、`make test-golden-routes` 或 `make test-valhalla-integration` 出現 Empty reply from server
 
 Valhalla 可能仍在建置圖磚，或正在載入剛產生的 `taiwan_custom.pbf`。先執行：
 
@@ -289,5 +297,5 @@ make test-flutter
 ## 尚未完成
 
 - Valhalla 兩段式左轉 `+90 秒` transition cost 客製化映像。
-- 穩定將自訂 OSM 機車標籤輸出到 maneuver JSON 的後端整合。
+- 長駐 API facade 或自訂 Valhalla service，讓 App 不必透過 CLI demo 才能取得台灣機車語意欄位。
 - 可證明待轉 `+90 秒` 懲罰實際改變選路的 Valhalla 客製化整合測試。

@@ -2,7 +2,7 @@
 
 這個 Flutter App 是台灣機車導航 MVP 的前端。它會顯示 MapLibre 地圖、監聽 GPS 更新、呼叫 Valhalla `/route` 規劃路線，並將導航中的近期定位點送到 Meili `/trace_route` 做道路吸附。
 
-App 也會解析 Valhalla maneuver 與 lane guidance。如果後端回傳台灣機車客製標記，前端可以顯示機車車道資訊，並在接近兩段式左轉路口時繪製虛擬待轉區。
+App 也會解析 Valhalla maneuver 與 lane guidance。如果後端回傳台灣機車客製標記，前端可以顯示機車車道資訊，並在接近兩段式左轉路口時繪製虛擬待轉區。目前支援 maneuver 本身、`custom`、`edge` 與 `taiwan_motorcycle` 內的 `motorcycle:lanes`、`restriction:motorcycle=two_stage_turn` 與 `two_stage_turn_penalty_seconds`。
 
 ## 驗證
 

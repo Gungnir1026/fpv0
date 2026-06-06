@@ -13,6 +13,7 @@
 - 長按地圖選擇目的地、Valhalla `/route` 規劃與偏航自動重新規劃。
 - Meili 吸附點新鮮度檢查與 MapLibre annotation 佇列，降低 GPS 飄移與快速操作造成的競態。
 - 融合後 PBF 機車標籤抽查與大安區 Valhalla 黃金路線驗收。
+- `motorcycle=no` 機車避讓整合測試，以及可補上 `taiwan_motorcycle` 欄位的 route facade demo。
 
 ## 快速啟動
 
@@ -48,6 +49,7 @@ make app-ios
 ├── infra/valhalla/               # Valhalla 設定與本機圖磚建置目錄
 ├── scripts/                      # Python 資料匯入、融合與 smoke test
 ├── tests/golden_routes/           # Valhalla 黃金路線案例
+├── tests/integration/            # Valhalla 機車語意整合案例
 ├── tests/python/                 # Python 單元測試
 ├── docker-compose.yml            # PostGIS 與 Valhalla 服務
 ├── Makefile                      # 常用開發、測試與啟動指令
@@ -62,6 +64,8 @@ make app-ios
 make test
 make test-valhalla
 make test-golden-routes
+make test-valhalla-integration
+make route-facade-demo
 make audit-pbf-tags
 ```
 
@@ -77,9 +81,11 @@ make python-sync
 make ingest-taipei
 make fuse-osm
 make audit-pbf-tags
+make route-facade-demo
 make test-python
 make test-flutter
 make test-golden-routes
+make test-valhalla-integration
 make app-ios
 make app-android
 ```

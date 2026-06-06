@@ -4,7 +4,7 @@
 
 目前 MVP 已打通「資料抓取、PostGIS 融合、Valhalla 路由、Flutter 地圖呈現」的基本鏈路。App 可以在 iOS 模擬器顯示臺北地圖、GPS 位置與 Meili 吸附路線，也已完成一般地圖、路線預覽、導航進行中三種 session 狀態。P0 穩定性整理已將導航判斷抽離為可測試 service，並加入吸附點新鮮度檢查與 MapLibre annotation 佇列。
 
-P0 已完成。P1 的基礎驗收工具已補上：目前可以抽查融合後 PBF 的機車標籤，也可以用三條大安區黃金路線固定驗證 Valhalla baseline。下一個目標是將台灣機車限制真正寫入 Valhalla 圖磚與 costing，讓禁行機車與兩段式左轉懲罰確實影響選路。
+P0 已完成。P1 的基礎驗收工具已補上：目前可以抽查融合後 PBF 的機車標籤，也可以用三條大安區黃金路線固定驗證 Valhalla baseline。`motorcycle=no` 已有 live integration case 證明會影響機車路由；`motorcycle:lanes` 與待轉語意已可透過 facade 推導並接回 Flutter parser。下一個目標是將兩段式左轉真正寫入 Valhalla 圖磚與 costing，讓 `+90 秒` 懲罰確實影響選路。
 
 ## 優先順序
 
@@ -23,14 +23,17 @@ P0 已完成。P1 的基礎驗收工具已補上：目前可以抽查融合後 P
 
 1. 建立融合後 PBF 標籤抽查工具：`make audit-pbf-tags`。
 2. 建立大安區 Valhalla baseline 黃金路線：`make test-golden-routes`。
+3. 建立 Valhalla 機車語意整合測試：`make test-valhalla-integration`，目前驗證 `motorcycle=no` 會讓機車避開 `民族陸橋`。
+4. 建立 CLI 形式的 route facade：`make route-facade-demo`，可把 PBF 推導出的 `taiwan_motorcycle` 欄位補回 Valhalla maneuver。
+5. Flutter parser 已可解析 `taiwan_motorcycle` 的車道與兩段式待轉欄位。
 
 下一步：
 
 1. 以固定版本 Valhalla 原始碼建立自有映像。
 2. 將 `restriction:motorcycle=two_stage_turn` 寫入圖磚可讀取的節點屬性。
 3. 在機車左轉 transition cost 加入可設定的 `90 秒` 待轉懲罰。
-4. 驗證 `motorcycle=no` 路段不可通行，且 `motorcycle:lanes=no|yes|yes` 可供前端顯示。
-5. 將黃金路線擴充為禁行、待轉與一般左轉對照案例，證明客製化 costing 會改變選路。
+4. 將 facade 從 CLI 升級為常駐 API server，讓 App 可直接打同一個 route endpoint 取得已補語意的 JSON。
+5. 將黃金路線擴充為待轉懲罰開啟/關閉對照案例，證明客製化 costing 會改變選路。
 
 ### P2：服務化與營運品質
 

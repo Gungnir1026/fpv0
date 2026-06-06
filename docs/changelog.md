@@ -10,6 +10,12 @@ YYYY-MM-DD
 - 備註：
 ```
 
+## 2026-06-06
+
+- 異動：新增 `scripts/valhalla_integration_test.py`、`tests/integration/valhalla_motorcycle_semantics.json`、`scripts/taiwan_motorcycle_route_facade.py` 與 `infra/valhalla/custom/README.md`；補上 `make test-valhalla-integration` 與 `make route-facade-demo`；Flutter parser 新增 `taiwan_motorcycle` 語意解析。
+- 驗證：Python 單元測試、Valhalla `motorcycle=no` 整合測試、route facade demo、Flutter 測試與 analyze。
+- 備註：`motorcycle=no` 已有 live routing proof；兩段式左轉 `+90 秒` 目前仍是 facade/UI 語意與 C++ scaffold，尚未進入 stock Valhalla costing。
+
 ## 2026-06-04
 
 - 異動：新增 `scripts/valhalla_golden_routes.py`、`tests/golden_routes/daan_motorcycle_routes.json` 與 `scripts/pbf_tag_audit.py`；補上 `make test-golden-routes` 與 `make audit-pbf-tags`。

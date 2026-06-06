@@ -1,9 +1,14 @@
 class AppConfig {
   const AppConfig._();
 
-  static const valhallaBaseUrl = String.fromEnvironment(
+  static const _legacyNavigationApiBaseUrl = String.fromEnvironment(
     'VALHALLA_BASE_URL',
-    defaultValue: 'http://localhost:8002',
+    defaultValue: 'http://localhost:8010',
+  );
+
+  static const navigationApiBaseUrl = String.fromEnvironment(
+    'NAVIGATION_API_BASE_URL',
+    defaultValue: _legacyNavigationApiBaseUrl,
   );
 
   static const mapStyleUrl = String.fromEnvironment(

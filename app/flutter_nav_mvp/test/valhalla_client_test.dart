@@ -10,7 +10,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 void main() {
   test('posts motorcycle map matching request and parses route', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient((request) async {
         expect(request.url.path, '/trace_route');
         final payload = jsonDecode(request.body) as Map<String, dynamic>;
@@ -56,7 +56,7 @@ void main() {
 
   test('deduplicates a shared geometry point between legs', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient((_) async {
         return http.Response(
           jsonEncode({
@@ -94,7 +94,7 @@ void main() {
 
   test('rejects invalid GPS coordinates before posting', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient((_) async => http.Response('{}', 200)),
     );
 
@@ -107,7 +107,7 @@ void main() {
 
   test('includes Valhalla error detail for non-success response', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient(
         (_) async => http.Response('{"error":"bad shape"}', 400),
       ),
@@ -128,7 +128,7 @@ void main() {
 
   test('posts motorcycle route request and parses preview route', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient((request) async {
         expect(request.url.path, '/route');
         final payload = jsonDecode(request.body) as Map<String, dynamic>;
@@ -168,7 +168,7 @@ void main() {
 
   test('rejects invalid destination before posting route request', () async {
     final client = ValhallaClient(
-      baseUrl: 'http://localhost:8002',
+      baseUrl: 'http://localhost:8010',
       httpClient: MockClient((_) async => http.Response('{}', 200)),
     );
 

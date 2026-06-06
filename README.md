@@ -1,27 +1,33 @@
 # 台灣機車導航 MVP
 
-本專案是一套針對台灣道路情境設計的機車導航最小可行性產品。資料管線會將 OpenStreetMap（OSM）PBF 與臺北市開放資料融合，建立 Valhalla 路由圖資，再由 Flutter App 透過 MapLibre 顯示地圖、GPS 定位與 Meili 道路吸附結果。
+本專案是一套針對台灣道路情境設計的機車導航最小可行性產品。資料管線會將 OpenStreetMap（OSM）PBF 與臺北市開放資料融合，建立 Valhalla 路由圖資，再由 Python API facade 補上台灣機車語意，最後由 Flutter App 透過 MapLibre 顯示地圖、GPS 定位與 Meili 道路吸附結果。
 
 目前測試範圍鎖定臺北市大安區，並已具備：
 
 - 臺北市機車待轉、禁行機車與開放第三車道資料匯入。
 - OSM 道路與機車限制資料融合。
 - PostGIS 空間媒合。
-- Valhalla 機車路由與 Meili `/trace_route` 道路吸附。
+- Valhalla 機車路由、Meili `/trace_route` 道路吸附與 Python API facade。
 - Flutter iOS 模擬器地圖、定位、吸附路線、車道資訊解析與虛擬待轉區繪製。
 - 一般地圖、路線預覽、導航進行中三種 session 狀態。
-- 長按地圖選擇目的地、Valhalla `/route` 規劃與偏航自動重新規劃。
+- 長按地圖選擇目的地、facade `/route` 規劃與偏航自動重新規劃。
 - Meili 吸附點新鮮度檢查與 MapLibre annotation 佇列，降低 GPS 飄移與快速操作造成的競態。
 - 融合後 PBF 機車標籤抽查與大安區 Valhalla 黃金路線驗收。
-- `motorcycle=no` 機車避讓整合測試，以及可補上 `taiwan_motorcycle` 欄位的 route facade demo。
+- `motorcycle=no` 機車避讓整合測試，以及可補上 `taiwan_motorcycle` 欄位的 route facade API。
 
 ## 快速啟動
 
-如果資料已經完成建置，只需：
+如果資料已經完成建置，先啟動後端：
 
 ```bash
 make backend-up
 make backend-status
+make facade-up
+```
+
+`make facade-up` 會在前景持續執行。另開一個終端機啟動 App：
+
+```bash
 make app-ios
 ```
 
@@ -65,6 +71,7 @@ make test
 make test-valhalla
 make test-golden-routes
 make test-valhalla-integration
+make test-facade
 make route-facade-demo
 make audit-pbf-tags
 ```
@@ -81,11 +88,13 @@ make python-sync
 make ingest-taipei
 make fuse-osm
 make audit-pbf-tags
+make facade-up
 make route-facade-demo
 make test-python
 make test-flutter
 make test-golden-routes
 make test-valhalla-integration
+make test-facade
 make app-ios
 make app-android
 ```

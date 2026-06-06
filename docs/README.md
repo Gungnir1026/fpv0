@@ -17,7 +17,7 @@
 | 文件 | 功能 |
 | --- | --- |
 | [../README.md](../README.md) | 專案首頁，包含專案摘要、快速啟動、文件索引與專案結構。 |
-| [../Makefile](../Makefile) | 常用開發指令入口，包裝後端啟動、資料匯入、測試與 Flutter 啟動。 |
+| [../Makefile](../Makefile) | 常用開發指令入口，包裝後端啟動、API facade、資料匯入、測試與 Flutter 啟動。 |
 | [../app/flutter_nav_mvp/README.md](../app/flutter_nav_mvp/README.md) | Flutter App 子專案說明，包含驗證、啟動、iOS/Android 權限與主要檔案。 |
 | [../infra/valhalla/custom/README.md](../infra/valhalla/custom/README.md) | Valhalla P1 客製化 scaffold，說明 `motorcycle=no`、facade 語意與兩段式左轉 C++ 成本契約。 |
 | [../infra/valhalla/custom_files/README.md](../infra/valhalla/custom_files/README.md) | Valhalla 掛載目錄說明，標示哪些檔案是本機建置產物。 |

@@ -83,24 +83,24 @@ class ValhallaClient {
           )
           .timeout(_requestTimeout);
     } on TimeoutException {
-      throw ValhallaException('Valhalla $operation request timed out.');
+      throw ValhallaException('Navigation API $operation request timed out.');
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ValhallaException(
-        'Valhalla $operation failed: HTTP ${response.statusCode}'
+        'Navigation API $operation failed: HTTP ${response.statusCode}'
         '${_errorMessage(response.body)}',
       );
     }
 
     final decoded = jsonDecode(response.body);
     if (decoded is! Map<String, dynamic>) {
-      throw const ValhallaException('Unexpected Valhalla response.');
+      throw const ValhallaException('Unexpected Navigation API response.');
     }
 
     final trip = _jsonObject(decoded['trip']);
     if (trip == null) {
-      throw const ValhallaException('Valhalla response missing trip.');
+      throw const ValhallaException('Navigation API response missing trip.');
     }
 
     final decodedLegs = _decodeLegs(trip);

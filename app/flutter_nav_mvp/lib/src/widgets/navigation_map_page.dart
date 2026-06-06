@@ -52,7 +52,7 @@ class _NavigationMapPageState extends State<NavigationMapPage> {
   @override
   void initState() {
     super.initState();
-    _valhallaClient = ValhallaClient(baseUrl: AppConfig.valhallaBaseUrl);
+    _valhallaClient = ValhallaClient(baseUrl: AppConfig.navigationApiBaseUrl);
     WidgetsBinding.instance.addPostFrameCallback((_) => _startTracking());
   }
 

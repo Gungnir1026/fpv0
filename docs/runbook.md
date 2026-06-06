@@ -109,23 +109,24 @@
 
    整合案例位於 `tests/integration/valhalla_motorcycle_semantics.json`。目前包含 `民族陸橋` control：auto 會通過該道路，motorcycle 會因 `motorcycle=no` 避開。
 
-6. 驗證 facade 可回傳 App 可解析的台灣機車語意：
+6. 驗證 API facade 可回傳 App 可解析的台灣機車語意：
 
    ```bash
+   make test-facade
    make route-facade-demo
    ```
 
-   這個 demo 會呼叫 Valhalla `/route`，再用 `taiwan_custom.pbf` 補上 maneuver 的 `taiwan_motorcycle`、`custom`、`motorcycle:lanes` 或 `restriction:motorcycle` 欄位。它目前是 CLI 形式，尚不是常駐 API server。
+   `make test-facade` 會啟動測試用 facade server，呼叫 `/health`、`/route` 與 `/trace_route`，確認 route 回應含有 `taiwan_motorcycle` 與 `motorcycle:lanes`。`make route-facade-demo` 保留 CLI 形式，方便直接檢視完整 JSON。
 
 7. 驗證 Meili 道路吸附：
 
    ```bash
-   curl -X POST http://localhost:8002/trace_route \
+   curl -X POST http://localhost:8010/trace_route \
      -H "Content-Type: application/json" \
      -d '{"shape":[{"lat":25.0337,"lon":121.5434},{"lat":25.0329,"lon":121.5410}],"costing":"motorcycle","shape_match":"map_snap"}'
    ```
 
-原生 Valhalla 可以遵守標準 `motorcycle=no` 限制。兩段式左轉 `+90 秒` 懲罰仍需要依照 [valhalla-customization.md](valhalla-customization.md) 建立客製化映像。
+原生 Valhalla 可以遵守標準 `motorcycle=no` 限制。facade 目前會補上台灣機車語意欄位，但兩段式左轉 `+90 秒` 懲罰仍需要依照 [valhalla-customization.md](valhalla-customization.md) 建立客製化映像。
 
 ## 階段四：啟動 Flutter App
 
@@ -137,6 +138,12 @@
    ```
 
 2. 啟動 iOS 模擬器 App：
+
+   ```bash
+   make facade-up
+   ```
+
+   `make facade-up` 會持續執行。另開一個終端機：
 
    ```bash
    make app-ios
@@ -154,19 +161,19 @@
    - 長按地圖上的目的地，進入路線預覽。
    - 確認距離與 ETA 後，按下開始進入導航。
    - 只有導航中才會顯示 maneuver、車道與虛擬待轉區。
-   - 偏離路線超過門檻後，App 會自動呼叫 `/route` 重新規劃。
+   - 偏離路線超過門檻後，App 會自動呼叫 facade `/route` 重新規劃。
 
 偏航判斷會優先使用 Meili 吸附位置，但只接受時間夠新且接近目前 raw GPS 的結果。過期吸附點或明顯定位跳點會退回 raw GPS，避免延遲重新規劃。MapLibre annotation 更新會依序執行，降低快速取消路線或連續選擇目的地時殘留舊線條的機率。
 
 ## 階段五：車道與虛擬待轉區
 
-Flutter App 呼叫 Meili `/trace_route` 時會帶入 `turn_lanes: true`，並解析 `trip.legs[].maneuvers[].lanes`。
+Flutter App 呼叫 facade `/trace_route` 時會帶入 `turn_lanes: true`，facade 會透明代理到 Meili，App 會解析 `trip.legs[].maneuvers[].lanes`。
 
 前端也能解析台灣機車管線提供的客製欄位：
 
 - `motorcycle:lanes`：例如 `no|yes|yes`，供車道 UI 判斷禁行與可通行車道。
 - `restriction:motorcycle=two_stage_turn`：可位於 maneuver 本身或 `custom`、`edge`、`taiwan_motorcycle` 物件內。
-- `taiwan_motorcycle.two_stage_turn=true` 與 `taiwan_motorcycle.two_stage_turn_penalty_seconds=90`：供 UI 顯示與後續 API facade 使用；目前尚未改變 stock Valhalla costing。
+- `taiwan_motorcycle.two_stage_turn=true` 與 `taiwan_motorcycle.two_stage_turn_penalty_seconds=90`：供 UI 顯示與後續客製 Valhalla costing 驗證使用；目前尚未改變 stock Valhalla costing。
 
 當下一個兩段式左轉 maneuver 距離目前 GPS 小於 `50 公尺`，App 會在對應 shape point 繪製藍色半透明 MapLibre Polygon。
 

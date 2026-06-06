@@ -20,7 +20,7 @@ motorcycle:lanes=no|yes|yes
 
 目前保留給前端顯示與後續圖磚屬性擴充。只要道路仍有一條可合法通行的車道，原生 Valhalla 不應將整條 edge 排除。
 
-目前 `scripts/taiwan_motorcycle_route_facade.py` 可從融合後 PBF 推導 `motorcycle:lanes`，並補回 Valhalla maneuver 的 `taiwan_motorcycle` 與 `custom` 欄位，Flutter parser 已可解析此格式。
+目前 `scripts/taiwan_motorcycle_api.py` 可從融合後 PBF 推導 `motorcycle:lanes`，並補回 Valhalla maneuver 的 `taiwan_motorcycle` 與 `custom` 欄位，Flutter parser 已可解析此格式。`scripts/taiwan_motorcycle_route_facade.py` 仍保留為 CLI demo。
 
 ## 兩段式左轉為何需要修改引擎
 
@@ -31,7 +31,7 @@ motorcycle:lanes=no|yes|yes
 1. Mjolnir：遇到 `restriction:motorcycle=two_stage_turn` 節點時，寫入可供圖磚保存的路口 flag。
 2. Sif：`MotorcycleCost::TransitionCost` 在機車左轉通過該節點時增加 `90 秒`。
 
-目前 `make route-facade-demo` 只會把 `two_stage_turn_penalty_seconds=90` 作為語意欄位補回 response，方便 UI 與後續 API facade 驗證；它尚未改變 stock Valhalla 的選路與 ETA。
+目前 API facade 與 `make route-facade-demo` 只會把 `two_stage_turn_penalty_seconds=90` 作為語意欄位補回 response，方便 UI 與後續客製 Valhalla 驗證；它尚未改變 stock Valhalla 的選路與 ETA。
 
 ## 目標行為
 
@@ -135,7 +135,7 @@ valhalla:
 - 有待轉 flag 的左轉 cost 與 ETA 增加 `90 秒`。
 - 同路口直行與右轉不增加懲罰。
 - 開啟與關閉懲罰時，黃金路線選擇符合預期。
-- `make test-valhalla-integration`、`make test-golden-routes` 與 `make route-facade-demo` 仍維持可用。
+- `make test-valhalla-integration`、`make test-golden-routes`、`make test-facade` 與 `make route-facade-demo` 仍維持可用。
 
 ## 暫時性替代方案
 

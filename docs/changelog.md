@@ -12,6 +12,12 @@ YYYY-MM-DD
 
 ## 2026-06-06
 
+- 異動：新增 `scripts/taiwan_motorcycle_api.py` 與 `scripts/taiwan_motorcycle_api_test.py`；補上 `make facade-up` 與 `make test-facade`；Flutter 改用 `NAVIGATION_API_BASE_URL` 呼叫台灣機車 API facade。
+- 驗證：Python compile、facade `/health`、`/route` 與 `/trace_route` live integration、Flutter analyze/test 與既有 Valhalla 驗收。
+- 備註：facade 啟動時會載入一次融合後 PBF 語意索引，`/route` 補上 `taiwan_motorcycle` 與 `motorcycle:lanes`，`/trace_route` 目前透明代理到 Valhalla。
+
+## 2026-06-06
+
 - 異動：新增 `scripts/valhalla_integration_test.py`、`tests/integration/valhalla_motorcycle_semantics.json`、`scripts/taiwan_motorcycle_route_facade.py` 與 `infra/valhalla/custom/README.md`；補上 `make test-valhalla-integration` 與 `make route-facade-demo`；Flutter parser 新增 `taiwan_motorcycle` 語意解析。
 - 驗證：Python 單元測試、Valhalla `motorcycle=no` 整合測試、route facade demo、Flutter 測試與 analyze。
 - 備註：`motorcycle=no` 已有 live routing proof；兩段式左轉 `+90 秒` 目前仍是 facade/UI 語意與 C++ scaffold，尚未進入 stock Valhalla costing。

@@ -6,13 +6,17 @@ GOLDEN_ROUTES ?= tests/golden_routes/daan_motorcycle_routes.json
 INTEGRATION_ROUTES ?= tests/integration/valhalla_motorcycle_semantics.json
 FACADE_PAYLOAD ?= infra/valhalla/custom_files/motorcycle_route_sample.json
 VALHALLA_BASE_URL ?= http://localhost:8002
+FACADE_HOST ?= 127.0.0.1
+FACADE_PORT ?= 8010
+NAVIGATION_API_BASE_URL ?= http://localhost:8010
+ANDROID_NAVIGATION_API_BASE_URL ?= http://10.0.2.2:8010
 MAP_STYLE_URL ?= https://tiles.openfreemap.org/styles/liberty
 
 .PHONY: help \
 	postgis-up valhalla-up backend-up backend-down backend-status backend-logs \
 	python-sync ingest-taipei fuse-osm \
-	route-facade-demo \
-	audit-pbf-tags test-python test-compose test-valhalla test-golden-routes test-valhalla-integration test-flutter test \
+	facade-up route-facade-demo \
+	audit-pbf-tags test-python test-compose test-valhalla test-golden-routes test-valhalla-integration test-facade test-flutter test \
 	flutter-get flutter-analyze flutter-test app-ios app-android
 
 help:
@@ -26,6 +30,7 @@ help:
 	@echo "  make python-sync      使用 uv 安裝 Python 依賴"
 	@echo "  make ingest-taipei    匯入臺北市開放資料"
 	@echo "  make fuse-osm         融合 OSM 與機車限制資料"
+	@echo "  make facade-up        啟動台灣機車導航 API facade"
 	@echo "  make route-facade-demo 呼叫 Valhalla 並補上台灣機車語意"
 	@echo "  make audit-pbf-tags   抽查融合後 PBF 的機車標籤"
 	@echo "  make test-python      執行 Python 測試與 compileall"
@@ -34,6 +39,7 @@ help:
 	@echo "  make test-valhalla    執行 Valhalla smoke test"
 	@echo "  make test-golden-routes 執行 Valhalla 黃金路線測試"
 	@echo "  make test-valhalla-integration 執行 Valhalla 機車語意整合測試"
+	@echo "  make test-facade      執行台灣機車導航 API facade 整合測試"
 	@echo "  make app-ios          啟動 iOS 模擬器 App"
 	@echo "  make app-android      啟動 Android 模擬器 App"
 
@@ -67,6 +73,9 @@ fuse-osm:
 audit-pbf-tags:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/pbf_tag_audit.py --pbf $(CUSTOM_PBF)
 
+facade-up:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/taiwan_motorcycle_api.py --host $(FACADE_HOST) --port $(FACADE_PORT) --base-url $(VALHALLA_BASE_URL) --pbf $(CUSTOM_PBF)
+
 route-facade-demo:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/taiwan_motorcycle_route_facade.py $(FACADE_PAYLOAD) --base-url $(VALHALLA_BASE_URL) --pbf $(CUSTOM_PBF)
 
@@ -86,6 +95,9 @@ test-golden-routes:
 test-valhalla-integration:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/valhalla_integration_test.py --cases $(INTEGRATION_ROUTES) --base-url $(VALHALLA_BASE_URL)
 
+test-facade:
+	UV_CACHE_DIR=$(UV_CACHE_DIR) uv run python scripts/taiwan_motorcycle_api_test.py --base-url $(VALHALLA_BASE_URL) --pbf $(CUSTOM_PBF) --payload $(FACADE_PAYLOAD)
+
 flutter-get:
 	cd $(FLUTTER_DIR) && flutter pub get
 
@@ -100,7 +112,7 @@ test-flutter: flutter-analyze flutter-test
 test: test-python test-compose test-flutter
 
 app-ios:
-	cd $(FLUTTER_DIR) && flutter run --dart-define=VALHALLA_BASE_URL=$(VALHALLA_BASE_URL) --dart-define=MAP_STYLE_URL=$(MAP_STYLE_URL)
+	cd $(FLUTTER_DIR) && flutter run --dart-define=NAVIGATION_API_BASE_URL=$(NAVIGATION_API_BASE_URL) --dart-define=MAP_STYLE_URL=$(MAP_STYLE_URL)
 
 app-android:
-	cd $(FLUTTER_DIR) && flutter run --dart-define=VALHALLA_BASE_URL=http://10.0.2.2:8002 --dart-define=MAP_STYLE_URL=$(MAP_STYLE_URL)
+	cd $(FLUTTER_DIR) && flutter run --dart-define=NAVIGATION_API_BASE_URL=$(ANDROID_NAVIGATION_API_BASE_URL) --dart-define=MAP_STYLE_URL=$(MAP_STYLE_URL)

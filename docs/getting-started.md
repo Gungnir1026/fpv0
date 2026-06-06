@@ -6,6 +6,7 @@
 
 - PostGIS：容器 `tw-nav-postgis`，本機 port `5432`。
 - Valhalla：容器 `tw-nav-valhalla`，本機 port `8002`。
+- 台灣機車 API facade：本機 foreground Python server，預設 port `8010`。
 - Python ETL：一律使用 `uv` 執行。
 - Flutter App：位於 `app/flutter_nav_mvp`。
 - 預設資料：臺北市開放資料加上 OSM PBF。
@@ -23,6 +24,7 @@
 | `make backend-down` | 關閉後端容器並保留資料。 |
 | `make backend-status` | 呼叫 Valhalla `/status`。 |
 | `make backend-logs` | 追蹤 Valhalla log，等待圖磚建置或排查 smoke test。 |
+| `make facade-up` | 啟動台灣機車導航 API facade，提供 `/health`、`/route` 與 `/trace_route`。 |
 | `make python-sync` | 使用 `uv` 安裝 Python 依賴。 |
 | `make ingest-taipei` | 匯入臺北市開放資料。 |
 | `make fuse-osm` | 融合 OSM 與機車限制資料，輸出 `taiwan_custom.pbf`。 |
@@ -31,9 +33,10 @@
 | `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線。 |
 | `make test-golden-routes` | 執行大安區固定起訖點的 Valhalla 黃金路線驗收。 |
 | `make test-valhalla-integration` | 驗證 `motorcycle=no` 會影響機車路由，並與 auto control 對照。 |
+| `make test-facade` | 啟動測試用 facade server，呼叫 `/health`、`/route` 與 `/trace_route` 驗證台灣機車語意與吸附代理。 |
 | `make route-facade-demo` | 呼叫 Valhalla 並補上 App 可解析的台灣機車語意欄位。 |
-| `make app-ios` | 啟動 iOS 模擬器 App。 |
-| `make app-android` | 啟動 Android 模擬器 App，會使用 `10.0.2.2` 連後端。 |
+| `make app-ios` | 啟動 iOS 模擬器 App，預設呼叫 `http://localhost:8010`。 |
+| `make app-android` | 啟動 Android 模擬器 App，預設呼叫 `http://10.0.2.2:8010`。 |
 
 ## 日常啟動
 
@@ -42,6 +45,12 @@
 ```bash
 make backend-up
 make backend-status
+make facade-up
+```
+
+`make facade-up` 會持續執行。另開一個終端機啟動 App：
+
+```bash
 make app-ios
 ```
 
@@ -55,7 +64,7 @@ Longitude: 121.5434
 
 ## 完整關閉
 
-1. 在執行 `make app-ios`、`make app-android` 或底層 `flutter run` 的終端機按下：
+1. 在執行 `make app-ios`、`make app-android`、`make facade-up` 或底層 `flutter run` 的終端機按下：
 
    ```text
    q
@@ -148,6 +157,7 @@ Longitude: 121.5434
    make test-valhalla
    make test-golden-routes
    make test-valhalla-integration
+   make test-facade
    make route-facade-demo
    ```
 
@@ -158,7 +168,15 @@ Longitude: 121.5434
     make test-flutter
     ```
 
-12. 啟動 iOS 模擬器 App：
+12. 啟動 facade：
+
+    ```bash
+    make facade-up
+    ```
+
+    `make facade-up` 會持續執行。另開一個終端機繼續下一步。
+
+13. 啟動 iOS 模擬器 App：
 
     ```bash
     make app-ios
@@ -173,6 +191,7 @@ make test
 make test-valhalla
 make test-golden-routes
 make test-valhalla-integration
+make test-facade
 make route-facade-demo
 make audit-pbf-tags
 ```
@@ -188,6 +207,7 @@ App 畫面應符合：
 - 導航中偏離規劃路線超過門檻時，App 會自動重新規劃。
 - `make test-golden-routes` 的三條大安區 baseline 路線皆通過。
 - `make test-valhalla-integration` 顯示 auto control 會走 `民族陸橋`，motorcycle 會避開同一條 `motorcycle=no` 道路。
+- `make test-facade` 可通過 `/health`、`/route` 與 `/trace_route` 檢查，且 route response 含有 `taiwan_motorcycle` 與 `motorcycle:lanes`。
 - `make route-facade-demo` 可輸出 App 可解析的 `taiwan_motorcycle`、`motorcycle:lanes` 與待轉語意欄位。
 - `make audit-pbf-tags` 顯示待轉、車道與禁行機車標籤至少達到最低門檻。
 
@@ -272,16 +292,22 @@ make backend-logs
 
 ### App 無法連線後端
 
+請先確認 facade 已啟動：
+
+```bash
+make facade-up
+```
+
 iOS 模擬器使用：
 
 ```bash
---dart-define=VALHALLA_BASE_URL=http://localhost:8002
+--dart-define=NAVIGATION_API_BASE_URL=http://localhost:8010
 ```
 
 Android 模擬器使用：
 
 ```bash
---dart-define=VALHALLA_BASE_URL=http://10.0.2.2:8002
+--dart-define=NAVIGATION_API_BASE_URL=http://10.0.2.2:8010
 ```
 
 ### Flutter 顯示 Lost connection to device
@@ -297,5 +323,4 @@ make test-flutter
 ## 尚未完成
 
 - Valhalla 兩段式左轉 `+90 秒` transition cost 客製化映像。
-- 長駐 API facade 或自訂 Valhalla service，讓 App 不必透過 CLI demo 才能取得台灣機車語意欄位。
 - 可證明待轉 `+90 秒` 懲罰實際改變選路的 Valhalla 客製化整合測試。

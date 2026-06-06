@@ -6,7 +6,8 @@
 
 1. Python ETL 將 OSM 與臺北市機車限制資料寫入 PostGIS，並輸出融合後的 PBF。
 2. Valhalla 依照 PBF 建立路由圖磚，提供機車路由與 Meili 道路吸附 API。
-3. Flutter App 使用 MapLibre 顯示地圖，取得 GPS 後呼叫 Valhalla 並繪製吸附路線。
+3. Python API facade 快取融合後 PBF 的台灣機車語意索引，轉發 Valhalla 並補上 App 可解析欄位。
+4. Flutter App 使用 MapLibre 顯示地圖，取得 GPS 後呼叫 facade 並繪製路線與吸附結果。
 
 ## 資料來源
 
@@ -37,6 +38,7 @@ Valhalla image 已固定到 digest，避免上游 `latest` 或相同 tag 重新�
 | requests | `2.34.2` | 呼叫臺北市開放資料與 TDX HTTP API。 |
 | psycopg2-binary | `2.9.12` | 將資料寫入 PostgreSQL/PostGIS，並執行空間查詢。 |
 | osmium | `4.3.1` | 讀取、篩選與改寫 OSM PBF。 |
+| Python `http.server` | 標準函式庫 | 提供本機台灣機車 API facade，不額外增加 Python server 依賴。 |
 
 Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。日常操作優先使用根目錄 `Makefile`，需要直接執行 Python 腳本時才使用 `uv run`。
 
@@ -48,7 +50,7 @@ Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。日常操作�
 | Dart | `3.12.0` | Flutter App 程式語言。 |
 | maplibre_gl | `0.26.1` | 顯示向量地圖、定位點、吸附路線與虛擬待轉區 Polygon。 |
 | geolocator | `14.0.2` | 處理定位權限、取得目前位置與監聽 GPS 更新。 |
-| http | `1.6.0` | 呼叫 Valhalla `/route` 與 Meili `/trace_route`。 |
+| http | `1.6.0` | 呼叫台灣機車 API facade `/route` 與 `/trace_route`。 |
 
 ## 原生開發環境
 
@@ -68,6 +70,7 @@ Python 依賴以 `pyproject.toml` 與 `uv.lock` 為唯一來源。日常操作�
 | `make test-golden-routes` | 以固定大安區起訖點驗證 Valhalla baseline 路線距離、時間、maneuver 與道路名稱。 |
 | `make test-valhalla-integration` | 驗證 `motorcycle=no` 對機車路由的實際影響，並與 auto control 對照。 |
 | `make audit-pbf-tags` | 抽查融合後 PBF 是否含有台灣機車限制標籤。 |
+| `make test-facade` | 啟動測試用 API facade，呼叫 `/health`、`/route` 與 `/trace_route` 驗證快取語意索引、回應欄位與吸附代理。 |
 | `make route-facade-demo` | 呼叫 Valhalla `/route` 後，用融合後 PBF 補上 `taiwan_motorcycle` 語意欄位。 |
 | `flutter analyze` | 檢查 Dart 型別、lint 與常見程式品質問題。 |
 | `flutter test` | 驗證 GPS 清理、polyline 解碼、車道解析、Valhalla client、導航 session、吸附點新鮮度、偏航幾何運算與 App 殼層。 |

@@ -19,6 +19,8 @@ Valhalla 圖磚 .gph / .tar
         ↓
 Valhalla /route 與 /trace_route
         ↓
+台灣機車 API facade /route 與 /trace_route
+        ↓
 Flutter + MapLibre App
 ```
 
@@ -72,14 +74,17 @@ Flutter + MapLibre App
 | --- | --- | --- | --- |
 | PostGIS | `tw-nav-postgis` | `5432` | 儲存 ETL 原始資料與融合暫存資料。 |
 | Valhalla | `tw-nav-valhalla` | `8002` | 建置並提供路由圖磚、`/route`、`/trace_route` 與 `/status`。 |
+| 台灣機車 API facade | 本機 Python process | `8010` | 快取融合後 PBF 的機車語意索引，轉發 `/route` 與 `/trace_route`，並在 `/route` 補上 App 可解析的台灣機車欄位。 |
 
 Valhalla 會從 `infra/valhalla/custom_files` 掛載 `valhalla.json`、融合後 PBF 與已建置圖磚。路由服務本身不直接讀取 PostGIS；PostGIS 只在資料匯入與 PBF 融合階段使用。
 
-`scripts/taiwan_motorcycle_route_facade.py` 是目前的輕量後端語意橋接工具。它會呼叫 Valhalla `/route`，再用融合後 PBF 的待轉節點與車道標籤補上 maneuver 層級的 `taiwan_motorcycle`、`custom`、`motorcycle:lanes` 與 `restriction:motorcycle` 欄位。這讓 Flutter UI 可以先接上真實資料語意；但它不會改變 stock Valhalla 的選路成本。
+`scripts/taiwan_motorcycle_api.py` 是目前的輕量後端語意橋接服務。它會在啟動時載入融合後 PBF，快取待轉節點與機車車道 way。App 呼叫 facade `/route` 時，facade 會轉發 Valhalla `/route`，再補上 maneuver 層級的 `taiwan_motorcycle`、`custom`、`motorcycle:lanes` 與 `restriction:motorcycle` 欄位。`/trace_route` 目前透明代理到 Valhalla，保留 Meili 道路吸附行為。
+
+`scripts/taiwan_motorcycle_route_facade.py` 保留為 CLI demo 與除錯工具；實際 App 預設改打 API facade。facade 不會改變 stock Valhalla 的選路成本。
 
 ## 路由與導航演算法
 
-App 呼叫 Valhalla `/route` 時，送出起點、終點與 `costing: motorcycle`。Valhalla 的流程可分為：
+App 呼叫 facade `/route` 時，送出起點、終點與 `costing: motorcycle`。facade 會轉發 Valhalla，Valhalla 的流程可分為：
 
 1. Loki 將輸入座標定位到路由圖上的候選道路。
 2. Sif 使用 motorcycle costing 計算道路、轉向與通行權限成本。
@@ -87,7 +92,7 @@ App 呼叫 Valhalla `/route` 時，送出起點、終點與 `costing: motorcycle
 4. Odin 產生 maneuver 與文字指引。
 5. Flutter 解碼 `trip.legs[].shape`，在 MapLibre 上繪製路線。
 
-導航中 App 也會定期呼叫 Meili `/trace_route`：
+導航中 App 也會定期呼叫 facade `/trace_route`，由 facade 轉發 Meili：
 
 ```json
 {
@@ -111,6 +116,7 @@ Meili 的結果用於道路吸附與偏航判斷。App 只接受時間夠新且�
 | `make audit-pbf-tags` | 使用 `scripts/pbf_tag_audit.py` 抽查 `taiwan_custom.pbf` 是否含有 `restriction:motorcycle=two_stage_turn`、`tdx:motorcycle_waiting_zone=yes`、`motorcycle:lanes`、`tdx:motorcycle_lane_restriction=yes` 與 `motorcycle=no`。預設為快速最低門檻抽查；需要精準全檔統計時可直接執行腳本並加上 `--full-scan`。 |
 | `make test-golden-routes` | 使用 `scripts/valhalla_golden_routes.py` 讀取 `tests/golden_routes/daan_motorcycle_routes.json`，固定驗證三條大安區機車 baseline 路線的距離、時間、maneuver 數量、travel type 與必要道路名稱。 |
 | `make test-valhalla-integration` | 使用 `scripts/valhalla_integration_test.py` 讀取 `tests/integration/valhalla_motorcycle_semantics.json`，驗證 auto control 會走 `民族陸橋`，而 motorcycle costing 會避開同一條 `motorcycle=no` 道路。 |
+| `make test-facade` | 使用 `scripts/taiwan_motorcycle_api_test.py` 啟動測試用 facade server，呼叫 `/health`、`/route` 與 `/trace_route`，驗證快取語意索引、吸附代理與 `taiwan_motorcycle`、`motorcycle:lanes` 回應欄位。 |
 | `make route-facade-demo` | 呼叫 Valhalla 並用 `taiwan_custom.pbf` 補上 App 可解析的台灣機車語意欄位。 |
 
 ## Flutter App 狀態
@@ -123,7 +129,7 @@ App 目前有三種 session：
 | 路線預覽 | 長按地圖選擇目的地 | 目的地、規劃路線、距離、ETA 與開始導航按鈕。 |
 | 導航中 | 按下開始導航 | 路線、定位、下一步 maneuver、車道 UI、虛擬待轉區與偏航重規劃。 |
 
-導航中若目前位置距離路線超過門檻，且距離上次規劃已超過最短間隔，App 會重新呼叫 `/route`。
+導航中若目前位置距離路線超過門檻，且距離上次規劃已超過最短間隔，App 會重新呼叫 facade `/route`。
 
 ## 目前已生效與尚未生效
 
@@ -131,9 +137,9 @@ App 目前有三種 session：
 
 - OSM 與臺北市資料可融合並輸出 `taiwan_custom.pbf`。
 - 原生 Valhalla 可依照標準 `motorcycle=no` 排除整條禁行道路，並已用 `make test-valhalla-integration` 驗證。
-- `scripts/taiwan_motorcycle_route_facade.py` 可推導 maneuver 層級的 `taiwan_motorcycle`、`restriction:motorcycle=two_stage_turn` 與 `motorcycle:lanes` 欄位。
+- `scripts/taiwan_motorcycle_api.py` 可快取融合後 PBF 語意索引，並在 `/route` 推導 maneuver 層級的 `taiwan_motorcycle`、`restriction:motorcycle=two_stage_turn` 與 `motorcycle:lanes` 欄位。
 - Flutter 可顯示地圖、定位、路線預覽、導航狀態、偏航重規劃與 UI 層的車道/待轉區解析。
-- Flutter parser 已可解析 `taiwan_motorcycle` 欄位，將後端推導的車道與待轉語意接回車道 UI 與虛擬待轉區。
+- Flutter 預設呼叫 facade，且 parser 已可解析 `taiwan_motorcycle` 欄位，將後端推導的車道與待轉語意接回車道 UI 與虛擬待轉區。
 
 尚未生效：
 

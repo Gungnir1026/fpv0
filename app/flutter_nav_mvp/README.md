@@ -1,8 +1,8 @@
 # 台灣機車導航 Flutter MVP
 
-這個 Flutter App 是台灣機車導航 MVP 的前端。它會顯示 MapLibre 地圖、監聽 GPS 更新、呼叫 Valhalla `/route` 規劃路線，並將導航中的近期定位點送到 Meili `/trace_route` 做道路吸附。
+這個 Flutter App 是台灣機車導航 MVP 的前端。它會顯示 MapLibre 地圖、監聽 GPS 更新、呼叫台灣機車 API facade `/route` 規劃路線，並將導航中的近期定位點送到 facade `/trace_route` 做道路吸附代理。
 
-App 也會解析 Valhalla maneuver 與 lane guidance。如果後端回傳台灣機車客製標記，前端可以顯示機車車道資訊，並在接近兩段式左轉路口時繪製虛擬待轉區。目前支援 maneuver 本身、`custom`、`edge` 與 `taiwan_motorcycle` 內的 `motorcycle:lanes`、`restriction:motorcycle=two_stage_turn` 與 `two_stage_turn_penalty_seconds`。
+App 也會解析 maneuver 與 lane guidance。如果 facade 回傳台灣機車客製標記，前端可以顯示機車車道資訊，並在接近兩段式左轉路口時繪製虛擬待轉區。目前支援 maneuver 本身、`custom`、`edge` 與 `taiwan_motorcycle` 內的 `motorcycle:lanes`、`restriction:motorcycle=two_stage_turn` 與 `two_stage_turn_penalty_seconds`。
 
 ## 驗證
 
@@ -39,7 +39,7 @@ make app-android
 
 ```bash
 flutter run \
-  --dart-define=VALHALLA_BASE_URL=http://localhost:8002 \
+  --dart-define=NAVIGATION_API_BASE_URL=http://localhost:8010 \
   --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ```
 
@@ -47,7 +47,7 @@ Android 模擬器使用 host loopback alias：
 
 ```bash
 flutter run \
-  --dart-define=VALHALLA_BASE_URL=http://10.0.2.2:8002 \
+  --dart-define=NAVIGATION_API_BASE_URL=http://10.0.2.2:8010 \
   --dart-define=MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ```
 
@@ -101,7 +101,7 @@ iOS 專案需要完整 Xcode 與 iOS Simulator runtime。
 | `lib/src/models/navigation_route.dart` | 路線幾何、ETA、距離與 maneuver。 |
 | `lib/src/models/navigation_maneuver.dart` | maneuver、lane、機車車道權限與兩段式左轉解析。 |
 | `lib/src/services/location_tracker.dart` | 定位權限與 GPS stream。 |
-| `lib/src/services/valhalla_client.dart` | Valhalla `/route`、Meili `/trace_route`、timeout 與回應解析。 |
+| `lib/src/services/valhalla_client.dart` | 導航 API facade `/route`、`/trace_route`、timeout 與回應解析。 |
 | `lib/src/services/navigation_guidance.dart` | 吸附點新鮮度、下一個 maneuver、車道與待轉提示判斷。 |
 | `lib/src/services/polyline_codec.dart` | Valhalla polyline6 解碼。 |
 | `lib/src/services/geo_math.dart` | 距離、偏航判斷與虛擬待轉區幾何運算。 |

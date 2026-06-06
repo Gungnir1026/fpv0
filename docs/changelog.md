@@ -12,6 +12,12 @@ YYYY-MM-DD
 
 ## 2026-06-04
 
+- 異動：新增 `scripts/valhalla_golden_routes.py`、`tests/golden_routes/daan_motorcycle_routes.json` 與 `scripts/pbf_tag_audit.py`；補上 `make test-golden-routes` 與 `make audit-pbf-tags`。
+- 驗證：Python 單元測試、PBF 標籤抽查、三條大安區 Valhalla 黃金路線。
+- 備註：此步建立 P1 後端客製化前的 baseline 驗收工具；尚未修改 Valhalla costing。
+
+## 2026-06-04
+
 - 異動：補上 `make postgis-up` 與 `make valhalla-up`，並將 README、getting-started、runbook、Flutter README、tech-stack 與簡報草稿改為 Makefile 優先的操作說明。
 - 驗證：文件引用檢查與 Makefile dry run。
 - 備註：此步只整理啟動與測試入口，未修改 App、ETL 或 Valhalla 路由邏輯。

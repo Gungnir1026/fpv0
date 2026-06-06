@@ -40,9 +40,11 @@ make postgis-up
 make python-sync
 make ingest-taipei
 make fuse-osm
+make audit-pbf-tags
 make valhalla-up
 make backend-logs
 make test-valhalla
+make test-golden-routes
 ```
 
 Flutter：
@@ -80,5 +82,7 @@ infra/valhalla/custom_files/timezones.sqlite
 2. 複製 `.env.example` 成 `.env`。
 3. 準備 `data/raw/osm/taiwan-latest.osm.pbf`。
 4. 跑 `make postgis-up`、`make python-sync`、`make ingest-taipei`、`make fuse-osm`。
-5. 跑 `make valhalla-up` 並用 `make backend-logs` 等待圖磚建置完成。
-6. 跑 Flutter App。
+5. 跑 `make audit-pbf-tags` 確認融合後 PBF 有機車標籤。
+6. 跑 `make valhalla-up` 並用 `make backend-logs` 等待圖磚建置完成。
+7. 跑 `make test-valhalla` 與 `make test-golden-routes` 驗證後端路線。
+8. 跑 Flutter App。

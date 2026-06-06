@@ -12,6 +12,7 @@
 - 一般地圖、路線預覽、導航進行中三種 session 狀態。
 - 長按地圖選擇目的地、Valhalla `/route` 規劃與偏航自動重新規劃。
 - Meili 吸附點新鮮度檢查與 MapLibre annotation 佇列，降低 GPS 飄移與快速操作造成的競態。
+- 融合後 PBF 機車標籤抽查與大安區 Valhalla 黃金路線驗收。
 
 ## 快速啟動
 
@@ -46,6 +47,7 @@ make app-ios
 ├── infra/postgres/init/          # PostGIS 初始化 SQL
 ├── infra/valhalla/               # Valhalla 設定與本機圖磚建置目錄
 ├── scripts/                      # Python 資料匯入、融合與 smoke test
+├── tests/golden_routes/           # Valhalla 黃金路線案例
 ├── tests/python/                 # Python 單元測試
 ├── docker-compose.yml            # PostGIS 與 Valhalla 服務
 ├── Makefile                      # 常用開發、測試與啟動指令
@@ -59,6 +61,8 @@ make app-ios
 ```bash
 make test
 make test-valhalla
+make test-golden-routes
+make audit-pbf-tags
 ```
 
 常用 target：
@@ -72,8 +76,10 @@ make backend-down
 make python-sync
 make ingest-taipei
 make fuse-osm
+make audit-pbf-tags
 make test-python
 make test-flutter
+make test-golden-routes
 make app-ios
 make app-android
 ```

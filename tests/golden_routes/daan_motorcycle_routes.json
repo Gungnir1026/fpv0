@@ -1,0 +1,142 @@
+{
+  "description": "Baseline Valhalla motorcycle routes in Taipei Da'an. These cases verify that the current graph can route through the test area before deeper Taiwan motorcycle costing work.",
+  "cases": [
+    {
+      "name": "daan_fuxing_to_xinsheng_baseline",
+      "description": "Longer north-south and east-west route used by the smoke test.",
+      "request": {
+        "locations": [
+          {
+            "lat": 25.0337,
+            "lon": 121.5434,
+            "type": "break"
+          },
+          {
+            "lat": 25.0264,
+            "lon": 121.5348,
+            "type": "break"
+          }
+        ],
+        "costing": "motorcycle",
+        "costing_options": {
+          "motorcycle": {
+            "disable_hierarchy_pruning": true,
+            "use_ferry": 0.0,
+            "use_highways": 0.4,
+            "use_tolls": 0.0
+          }
+        },
+        "directions_type": "instructions",
+        "language": "zh-TW",
+        "turn_lanes": true,
+        "units": "kilometers"
+      },
+      "expect": {
+        "status": 0,
+        "length_km": {
+          "min": 2.5,
+          "max": 3.3
+        },
+        "time_s": {
+          "min": 350,
+          "max": 650
+        },
+        "min_maneuvers": 5,
+        "travel_type": "motorcycle",
+        "required_substrings": [
+          "復興南路一段",
+          "和平東路二段",
+          "新生南路二段"
+        ],
+        "summary_bbox": {
+          "min_lon": 121.532,
+          "min_lat": 25.024,
+          "max_lon": 121.545,
+          "max_lat": 25.035,
+          "tolerance_degrees": 0.003
+        }
+      }
+    },
+    {
+      "name": "daan_short_map_matching_baseline",
+      "description": "Short route that mirrors the Meili trace_route demo around Fuxing South Road.",
+      "request": {
+        "locations": [
+          {
+            "lat": 25.0337,
+            "lon": 121.5434,
+            "type": "break"
+          },
+          {
+            "lat": 25.0329,
+            "lon": 121.5410,
+            "type": "break"
+          }
+        ],
+        "costing": "motorcycle",
+        "directions_type": "instructions",
+        "language": "zh-TW",
+        "turn_lanes": true,
+        "units": "kilometers"
+      },
+      "expect": {
+        "status": 0,
+        "length_km": {
+          "min": 0.2,
+          "max": 0.6
+        },
+        "time_s": {
+          "min": 40,
+          "max": 140
+        },
+        "min_maneuvers": 3,
+        "travel_type": "motorcycle",
+        "required_substrings": [
+          "復興南路一段",
+          "復興南路二段12巷"
+        ]
+      }
+    },
+    {
+      "name": "daan_westbound_renai_baseline",
+      "description": "Westbound Da'an route with a U-turn and Ren'ai Road segment, useful for future turn-cost comparison.",
+      "request": {
+        "locations": [
+          {
+            "lat": 25.0337,
+            "lon": 121.5434,
+            "type": "break"
+          },
+          {
+            "lat": 25.0338,
+            "lon": 121.5325,
+            "type": "break"
+          }
+        ],
+        "costing": "motorcycle",
+        "directions_type": "instructions",
+        "language": "zh-TW",
+        "turn_lanes": true,
+        "units": "kilometers"
+      },
+      "expect": {
+        "status": 0,
+        "length_km": {
+          "min": 1.7,
+          "max": 2.6
+        },
+        "time_s": {
+          "min": 250,
+          "max": 460
+        },
+        "min_maneuvers": 6,
+        "travel_type": "motorcycle",
+        "required_substrings": [
+          "復興南路一段",
+          "仁愛路三段",
+          "新生南路一段"
+        ]
+      }
+    }
+  ]
+}

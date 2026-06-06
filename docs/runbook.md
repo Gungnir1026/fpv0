@@ -60,6 +60,12 @@
    make fuse-osm
    ```
 
+4. 抽查融合後 PBF 的機車標籤：
+
+   ```bash
+   make audit-pbf-tags
+   ```
+
 腳本會先將目標區域道路暫存到 PostGIS，再透過文字與空間媒合：
 
 - 將 `raw_tdx.motorcycle_waiting_zones` 對應到 OSM 路口節點，加入 `restriction:motorcycle=two_stage_turn`。
@@ -87,7 +93,15 @@
    make test-valhalla
    ```
 
-4. 驗證 Meili 道路吸附：
+4. 驗證固定黃金路線：
+
+   ```bash
+   make test-golden-routes
+   ```
+
+   黃金路線案例位於 `tests/golden_routes/daan_motorcycle_routes.json`，目前固定檢查三組大安區起訖點的距離、時間、maneuver 數量與必要道路名稱。
+
+5. 驗證 Meili 道路吸附：
 
    ```bash
    curl -X POST http://localhost:8002/trace_route \

@@ -26,8 +26,10 @@
 | `make python-sync` | 使用 `uv` 安裝 Python 依賴。 |
 | `make ingest-taipei` | 匯入臺北市開放資料。 |
 | `make fuse-osm` | 融合 OSM 與機車限制資料，輸出 `taiwan_custom.pbf`。 |
+| `make audit-pbf-tags` | 抽查融合後 PBF 是否含有待轉、車道與禁行機車標籤。 |
 | `make test` | 執行不需要 Valhalla 已啟動的本機檢查。 |
 | `make test-valhalla` | 驗證本機 Valhalla 能回傳大安區機車路線。 |
+| `make test-golden-routes` | 執行大安區固定起訖點的 Valhalla 黃金路線驗收。 |
 | `make app-ios` | 啟動 iOS 模擬器 App。 |
 | `make app-android` | 啟動 Android 模擬器 App，會使用 `10.0.2.2` 連後端。 |
 
@@ -123,7 +125,13 @@ Longitude: 121.5434
    make fuse-osm
    ```
 
-8. 啟動 Valhalla 並等待圖磚建置完成：
+8. 抽查融合後 PBF 內是否有機車標籤：
+
+   ```bash
+   make audit-pbf-tags
+   ```
+
+9. 啟動 Valhalla 並等待圖磚建置完成：
 
    ```bash
    make valhalla-up
@@ -132,20 +140,21 @@ Longitude: 121.5434
 
    看到服務開始監聽 `8002` 後，以 `Ctrl+C` 離開 log 畫面即可。容器仍會繼續執行。
 
-9. 驗證後端：
+10. 驗證後端：
 
    ```bash
    make test-valhalla
+   make test-golden-routes
    ```
 
-10. 驗證 Flutter：
+11. 驗證 Flutter：
 
     ```bash
     make flutter-get
     make test-flutter
     ```
 
-11. 啟動 iOS 模擬器 App：
+12. 啟動 iOS 模擬器 App：
 
     ```bash
     make app-ios
@@ -158,6 +167,8 @@ Longitude: 121.5434
 ```bash
 make test
 make test-valhalla
+make test-golden-routes
+make audit-pbf-tags
 ```
 
 App 畫面應符合：
@@ -169,6 +180,8 @@ App 畫面應符合：
 - 預覽面板顯示距離、時間與開始按鈕。
 - 按下開始後，畫面切換為導航中；只有此時才會顯示 maneuver、車道與虛擬待轉區。
 - 導航中偏離規劃路線超過門檻時，App 會自動重新規劃。
+- `make test-golden-routes` 的三條大安區 baseline 路線皆通過。
+- `make audit-pbf-tags` 顯示待轉、車道與禁行機車標籤至少達到最低門檻。
 
 偏航判斷會優先採用新鮮且接近目前 raw GPS 的 Meili 吸附點。如果吸附結果已過期，或定位突然跳離原位置，App 會退回 raw GPS，避免舊吸附點延遲重新規劃。
 
@@ -239,7 +252,7 @@ Latitude: 25.0337
 Longitude: 121.5434
 ```
 
-### `make test-valhalla` 出現 Empty reply from server
+### `make test-valhalla` 或 `make test-golden-routes` 出現 Empty reply from server
 
 Valhalla 可能仍在建置圖磚，或正在載入剛產生的 `taiwan_custom.pbf`。先執行：
 
@@ -247,7 +260,7 @@ Valhalla 可能仍在建置圖磚，或正在載入剛產生的 `taiwan_custom.p
 make backend-logs
 ```
 
-等待 log 顯示服務已開始監聽 `8002` 後，再重新執行 `make test-valhalla`。
+等待 log 顯示服務已開始監聽 `8002` 後，再重新執行後端驗收指令。
 
 ### App 無法連線後端
 
@@ -277,4 +290,4 @@ make test-flutter
 
 - Valhalla 兩段式左轉 `+90 秒` transition cost 客製化映像。
 - 穩定將自訂 OSM 機車標籤輸出到 maneuver JSON 的後端整合。
-- 可重複執行的待轉、禁行機車與偏航黃金路線整合測試。
+- 可證明待轉 `+90 秒` 懲罰實際改變選路的 Valhalla 客製化整合測試。

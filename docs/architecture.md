@@ -100,6 +100,15 @@ App 呼叫 Valhalla `/route` 時，送出起點、終點與 `costing: motorcycle
 
 Meili 的結果用於道路吸附與偏航判斷。App 只接受時間夠新且接近目前 raw GPS 的吸附點，避免舊吸附結果延遲重新規劃。
 
+## 驗收工具
+
+目前新增兩個後端與圖資驗收入口：
+
+| 指令 | 用途 |
+| --- | --- |
+| `make audit-pbf-tags` | 使用 `scripts/pbf_tag_audit.py` 抽查 `taiwan_custom.pbf` 是否含有 `restriction:motorcycle=two_stage_turn`、`tdx:motorcycle_waiting_zone=yes`、`motorcycle:lanes`、`tdx:motorcycle_lane_restriction=yes` 與 `motorcycle=no`。預設為快速最低門檻抽查；需要精準全檔統計時可直接執行腳本並加上 `--full-scan`。 |
+| `make test-golden-routes` | 使用 `scripts/valhalla_golden_routes.py` 讀取 `tests/golden_routes/daan_motorcycle_routes.json`，固定驗證三條大安區機車 baseline 路線的距離、時間、maneuver 數量、travel type 與必要道路名稱。 |
+
 ## Flutter App 狀態
 
 App 目前有三種 session：
